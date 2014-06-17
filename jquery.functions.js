@@ -72,7 +72,7 @@
 	// loads a CSS file into the <head>
 	$.loadCSS = function (href)
 	{
-		if (href == undefined) "CSS href is undefined!";
+		if (href == undefined) throw new Error("CSS href is undefined!");
 		
 		var script = $("<link/>",{
 			rel: "stylesheet",
