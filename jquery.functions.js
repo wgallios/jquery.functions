@@ -26,9 +26,9 @@ SOFTWARE.
 
 */
 
-
-
-
+var rjs = new Array();
+var rjsLoading = false;
+var noredirect = true;
 
 ;(function($){
 	'use strict';
@@ -160,7 +160,7 @@ SOFTWARE.
 			}
 			catch (e)
 			{
-				this_.log(e.message);
+				//this_.log(e.message);
 				return false;
 			}
 
@@ -220,5 +220,216 @@ SOFTWARE.
 			window.console && console.log((new Error()).stack);
 		}
 	}
+	
+	// redraws element to freshs its layout
+	$.fn.redraw = function()
+	{
+		$(this).each(function(index, el){
+			this.offsetHeight;
+		});
+	};
+	
+	$.isJS = function (src)
+	{
+		var ext = $._getFileExt(src);
+
+		if (ext == 'JS') return true;
+		
+		return false;
+	}
+	
+	$.getFileExt = $.fn.getFileExt = function (file)
+	{
+		if (typeof file == 'string')
+		{
+			return $._getFileExt(file);
+		}
+		else
+		{
+			//$.log(typeof file);
+		}
+	}
+	
+	// private function that extracts the ext from a string
+	$._getFileExt = function (fileString)
+	{
+		if (typeof fileString !== 'string') throw new Error("file name is not a string!");
+		
+		     	
+        var ld = fileString.lastIndexOf('.');
+
+		var ext = fileString.substr((ld + 1), (fileString.length - ld));
+
+		if (ext.indexOf('?') > 0)
+		{
+			ext = ext.substr(0, ext.indexOf('?'));	
+		}
+		
+		if (ext.indexOf('&') > 0)
+		{
+			ext = ext.substr(0, ext.indexOf('&'));	
+		}
+		
+		ext = ext.toUpperCase();
+
+
+		return ext;
+
+	}
+	
+	$.min = function (src)
+	{
+		///min/?{$method}={$path}{$name}{$debug}{$version}
+		var minv = $('body').data('minv');
+		
+		src = "/min/?f=" + src;
+		
+		if (minv !== undefined) src += "&amp;" + minv;
+		
+		return src;
+	}
+	
+
+	/*
+	$.queJS = function (files, cb)
+	{
+		var q = $($.requireJS.queue(files, cb);
+		
+		if (rjsLoading) setTimeout(function(){ $.queJS(files, cb) }, 1000);
+		else
+		{
+			$.requireJS(files, cb);
+		}
+	}
+	*/
+
+	
+	$.requireJS = function (files, cb)
+	{
+
+		
+		$.when(
+			$.Deferred(function(){
+			
+				var self = this;
+			
+				$(files).each(function(i, s){
+					var loaded = $.checkJSLoaded(s);
+					
+					// removes element from array if already loaded
+					if (loaded) delete files[i];
+					else rjs.push(s);
+				});
+			
+				
+				require(files, function(data){
+					self.resolve();
+				});
+			//rJS(files);
+		}))
+		.done(function(){
+			var d = new Date();
+			
+			//console.log(d.toUTCString() + " Done");
+			//console.log($.getLoadedJSFiles());
+			
+			if (cb !== undefined && typeof cb == 'function') cb();
+		});
+		
+		
+		/*
+		function rJS (files)
+		{
+			var d = new $.Deferred();
+
+			$(files).each(function(i, s){
+				var loaded = $.checkJSLoaded(s);
+				
+				// removes element from array if already loaded
+				if (loaded) delete files[i];
+				else rjs.push(s);
+			});
+		
+			
+			require(files, function(data){
+				
+			});
+		}
+		*/
+	}
+	
+	$._requireJS = function (files)
+	{
+
+		
+		if (rjsLoading) throw new Error("Currently Loading Scripts");
+		
+		$(files).each(function(i, s){
+			var loaded = $.checkJSLoaded(s);
+			
+			// removes element from array if already loaded
+			if (loaded) delete files[i];
+			else rjs.push(s);
+		});
+	
+		//rjsLoading = true;
+	
+		//global.log(files);
+		require(files, function(data){
+			//rjsLoading = false;
+			
+			//d.resolve(data);
+			
+			//if (cb !== undefined && typeof cb == 'function') cb(data, files);
+			
+			return true;
+		});
+		
+		//return d.promise();
+	}
+	
+	$.getLoadedJSFiles = function ()
+	{
+		return rjs;
+	}
+	
+	// checks if the src is in the loaded JS array
+	// from $.requireJS
+	$.checkJSLoaded = function (src)
+	{
+		var loaded = false;
+		
+		var check = jQuery.inArray(src, rjs);
+		
+
+		if (check > -1) return true;
+		else return false;
+	}
+	
+
+	
+	$.fn.location = $.fn.location = function (url)
+	{
+		var this_ = this;
+		
+		window.noredirect = false;
+				
+		$(window).trigger('jquery.redirect', [url]);
+
+
+	}
+
+	$(window).on('jquery.redirect', function (e, url)
+	{
+		$(window).trigger('preprocess.redirect', [url]);
+		
+		if (window.noredirect == false)
+		{
+			window.location = url;
+		}		
+		$(window).trigger('postprocess.redirect', [url]);
+	});
+
+	
 
 })(jQuery);
