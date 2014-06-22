@@ -2,9 +2,9 @@
 
 Extra jQuery functions I use.
 
-<h3>Uploader</h3>
+<h2>Uploader</h2>
 <p>Uploader Replaces curer
-<h4>Usage</h4>
+<h3>Usage</h3>
 
 	var uploader = $("input[type='file']").uploader({
 		debug: false,
@@ -24,14 +24,14 @@ Extra jQuery functions I use.
 	
 	var uploadData = uploader.serialize();
 	
-<h4>Events</h4>
+<h3>Events</h4>
 
 <p>dragenterr</p>
 <p>drop</p>
 <p>upload.percent.update</p>
 <p>upload.complete</p>
 	
-<h3>License</h3>
+<h2>License</h2>
 
 The MIT License (MIT)
 
