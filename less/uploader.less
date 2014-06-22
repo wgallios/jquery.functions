@@ -1,0 +1,151 @@
+@fontsize:1em;
+@color: #aeaeae;
+@borderColor:#c9c6ff;
+@borderThickness:2px;
+@highlight:#fcf8cb;
+
+.font
+{
+	color: @color;
+	font-size:@fontsize;
+}
+
+.shadow
+{
+	
+	-webkit-box-shadow: 1px 1px 5px 2px #C4C4C4;
+	-moz-box-shadow: 1px 1px 5px 2px #C4C4C4;
+	box-shadow: 1px 1px 5px 2px #C4C4C4;
+}
+
+.block
+{
+	width: 100%;
+	height: 100%;
+	float: none;
+	display: block;
+}
+
+.uploader-dropzone
+{
+	
+	
+	display:block;
+	width:100%;
+
+	padding:20px;
+	border:2px solid @borderColor;
+		
+		
+	.font;
+	
+	span
+	{
+		.font;
+	}
+	
+	.upload-btn
+	{
+		.font;
+		
+		margin-right: 15px;
+		background: none;
+		border:@borderThickness solid #c9c6ff;
+		padding:6px 12px;
+	}
+}
+
+.dropzone-highlight
+{
+	background:@highlight;
+	border:@borderThickness dashed @borderColor;
+}
+
+
+#progress-container
+{
+	position: fixed;
+	display: block;
+	top:30px;
+	left:30px;
+	width: 30%;
+	height: inherit;
+	z-index:9999;
+			
+	.uploader-progress-container
+	{
+	
+		width: 100%;
+
+
+		display: block;
+		position: relative;
+		
+		margin-bottom:10px;
+
+	
+		.progress-bg
+		{
+			.block;
+			.shadow;
+			border-radius: 4px;
+			position: absolute;
+
+
+			width: 100%;
+			height: 100%;
+			background: black;
+			opacity: 0.5;
+		}
+		
+		.progress-content
+		{
+			padding:10px;
+			display: block;
+			width: 100%;
+			position: relative;
+			
+			span
+			{
+				color:white;
+			}
+		}
+	
+		
+		span.fileinfo
+		{
+			margin-bottom: 5px;
+			float: none;
+			display: block;
+			
+			span.file
+			{
+				
+			}
+		}
+		
+		span.percent
+		{
+			margin-left:5px;
+		}
+			
+		span.percent:after
+		{
+			content:'%';
+		}
+	
+		.uploader-progress-bar
+		{
+			background: @borderColor;
+			height: 10px;
+			border-radius: 4px;
+			display: block;
+			position: relative;
+			border: 1px solid gray;
+			
+	
+		}
+	
+	}
+
+}
