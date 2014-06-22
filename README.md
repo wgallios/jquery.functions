@@ -2,6 +2,23 @@
 
 Extra jQuery functions I use.
 
+<h3>Uploader</h3>
+
+<h4>Usage</h4>
+	<code>
+	var uploader = $("input[type='file']").uploader({
+		uploadUrl: '/upload.php,
+		CSRF:
+		{
+			enabled: true,
+			key: 'token', 
+			val: ''
+		}
+	}).data('uploader');
+	
+	var uploadData = uploader.serialize();
+	
+	</code>
 <h3>License</h3>
 
 The MIT License (MIT)
