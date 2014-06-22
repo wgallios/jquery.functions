@@ -7,7 +7,13 @@ Extra jQuery functions I use.
 <h4>Usage</h4>
 	<code>
 	var uploader = $("input[type='file']").uploader({
-		uploadUrl: '/upload.php,
+		debug: false,
+		uploadUrl: '/uploade.php',
+		containerClass: 'uploader-dropzone',
+		inheritClasses: false,
+		filePostKey: 'file',
+		showProgress: true,
+		successFunction: function(){},
 		CSRF:
 		{
 			enabled: true,
