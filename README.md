@@ -2,7 +2,38 @@
 
 Extra jQuery functions I use.
 
-<h3>License</h3>
+<h2>Uploader</h2>
+
+<p>Uploader Replaces HTML file uploader</p>
+
+<h3>Usage</h3>
+	<pre>
+	var uploader = $("input[type='file']").uploader({
+		debug: false,
+		uploadUrl: '/uploade.php',
+		containerClass: 'uploader-dropzone',
+		inheritClasses: false,
+		filePostKey: 'file',
+		showProgress: true,
+		successFunction: function(){},
+		CSRF:
+		{
+			enabled: true,
+			key: 'token', 
+			val: ''
+		}
+	}).data('uploader');
+	
+	var uploadData = uploader.serialize();
+	</pre>
+<h3>Events</h4>
+
+<code>dragenterr</code>
+<code>drop</code>
+<code>upload.percent.update</code>
+<code>upload.complete</code>
+	
+<h2>License</h2>
 
 The MIT License (MIT)
 

@@ -80,6 +80,7 @@ Credits:
 		inheritClasses: false,
 		filePostKey: 'file',
 		showProgress: true,
+		successFunction: undefined,
 		CSRF:{
 			enabled: false,
 			key: '',
@@ -110,10 +111,15 @@ Credits:
 	fn.init = function ()
 	{
 		var $node = $(this.el);
-		
+		var this_ = this;
 		
 		// remove intial html element
 		$node.css('display', 'none');
+		
+		$node.change(function (){
+			this_.basicFileUpload($(this)[0].files[0]);
+	     });
+		
 		
 		this.build(); // generates HTML
 		this.buildProgressContainer();
@@ -253,8 +259,12 @@ Credits:
 					
 					this_.setPBPercent(pb, pctDisplay);
 					
+					$(this_).trigger('upload.percent.update', [fd, pctDisplay]);
+					
 					if (pct >= 100)
 					{
+						$(this_).trigger('upload.complete', fd);
+						
 						this_.removeProgressBar(pb);
 						//user.hideProgressbar(progressbar);
 					}
@@ -268,9 +278,42 @@ Credits:
 			},
 			success: function(data)
 			{
-			  
+			 	if (successFunction !== undefined && typeof successFunction == 'function') successFunction(data, fd); 
 			}
 		});
+	}
+	
+	fn.basicFileUpload = function (file)
+	{
+		var csrf = this.options.CSRF;
+				
+		var fd = new FormData();
+
+		fd.append(this.options.filePostKey, file);
+		
+		if (csrf.enabled)
+		{
+			fd.append(csrf.key, csrf.val);
+		}
+		
+		var pb = this.createProgressBar();
+			
+		this.setPBFileName(pb, file.name);
+		
+		if (this.velocity) $(pb).velocity({ opacity:1 });
+		else $(pb).fadeIn();
+			
+		this.sendFile(fd, pb);
+		
+		this.files.push(files);
+
+		return true;
+	}
+	
+	
+	fn.serialize = function ()
+	{
+		return this.files;
 	}
 	
 	fn.buildProgressContainer = function ()
