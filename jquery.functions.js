@@ -102,10 +102,41 @@ var noredirect = true;
 			type: "text/css",
 			href: href
 			});
-			
+
 		script.appendTo("head");
 		
 		return script;
+	}
+
+	$.docUrl = function (file, selector, srcTag)
+	{
+		if (selector == undefined) selector = 'script';
+		if (srcTag == undefined) srcTag = 'src';
+		
+		var docurl = '';
+		
+		var s = $('head').find('script');
+		
+		$(s).each(function(i, s){
+				var $s = $(s);
+
+				var src = $s.attr(srcTag);
+				
+				if (src == undefined) return false;
+				console.log("SRC: " + src);
+	            if (src.indexOf(file) >= 0 )
+	            {
+	                docurl = src.substring(0, src.indexOf(file));
+	                console.log("MATCH: " + docurl);
+	                return true;
+	            }
+	            
+		});
+		
+		if (docurl == '') return false;
+		
+		return docurl;
+	
 	}
 
 	/**
@@ -281,10 +312,12 @@ var noredirect = true;
 	{
 		///min/?{$method}={$path}{$name}{$debug}{$version}
 		var minv = $('body').data('minv');
+		var mindebug = $('body').data('mindebug');
 		
 		src = "/min/?f=" + src;
 		
 		if (minv !== undefined) src += "&amp;" + minv;
+		if (mindebug !== undefined) src += '&amp;debug';
 		
 		return src;
 	}
