@@ -3,9 +3,11 @@
 Extra jQuery functions I use.
 
 <h2>Uploader</h2>
-<p>Uploader Replaces curer
+
+<p>Uploader Replaces HTML file uploader</p>
+
 <h3>Usage</h3>
-	<code>
+	<pre>
 	var uploader = $("input[type='file']").uploader({
 		debug: false,
 		uploadUrl: '/uploade.php',
@@ -23,13 +25,13 @@ Extra jQuery functions I use.
 	}).data('uploader');
 	
 	var uploadData = uploader.serialize();
-	</code>
+	</pre>
 <h3>Events</h4>
 
-<p>dragenterr</p>
-<p>drop</p>
-<p>upload.percent.update</p>
-<p>upload.complete</p>
+<code>dragenterr</code>
+<code>drop</code>
+<code>upload.percent.update</code>
+<code>upload.complete</code>
 	
 <h2>License</h2>
 
