@@ -5,7 +5,7 @@ Extra jQuery functions I use.
 <h2>Uploader</h2>
 <p>Uploader Replaces curer
 <h3>Usage</h3>
-
+	<code>
 	var uploader = $("input[type='file']").uploader({
 		debug: false,
 		uploadUrl: '/uploade.php',
@@ -23,7 +23,7 @@ Extra jQuery functions I use.
 	}).data('uploader');
 	
 	var uploadData = uploader.serialize();
-	
+	</code>
 <h3>Events</h4>
 
 <p>dragenterr</p>
