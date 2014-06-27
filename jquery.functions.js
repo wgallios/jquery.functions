@@ -30,6 +30,12 @@ var rjs = new Array();
 var rjsLoading = false;
 var noredirect = true;
 
+String.prototype.nl2br = function()
+{
+    return this.replace(/\n/g, "<br />");
+}
+
+
 ;(function($){
 	'use strict';
 	
