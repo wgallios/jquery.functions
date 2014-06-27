@@ -7,7 +7,7 @@ Extra jQuery functions I use.
 <p>Uploader Replaces HTML file uploader</p>
 
 <h3>Usage</h3>
-	<pre>
+	
 	var uploader = $("input[type='file']").uploader({
 		debug: false,
 		uploadUrl: '/uploade.php',
@@ -25,13 +25,32 @@ Extra jQuery functions I use.
 	}).data('uploader');
 	
 	var uploadData = uploader.serialize();
-	</pre>
-<h3>Events</h4>
+	
+<h3>Events</h3>
 
 <code>dragenterr</code>
 <code>drop</code>
 <code>upload.percent.update</code>
 <code>upload.complete</code>
+	
+<h2>Alerts</h2>
+
+<p>Easily  display notifcations</p>
+
+<h3>Usage</h3>
+	
+	var alert = $('body').alerts({
+		borderRadius: 4,
+		container:
+		{
+			width:'30%'
+		}
+	}).data('alerts');
+
+	alert.warning("Oh nooo");
+	alert.success("Good Job");
+	alert.danger("Oh my Bob");
+	alert.info("info");
 	
 <h2>License</h2>
 
