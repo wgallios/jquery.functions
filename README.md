@@ -40,10 +40,39 @@ Extra jQuery functions I use.
 <h3>Usage</h3>
 	
 	var alert = $('body').alerts({
-		borderRadius: 4,
+		debug: false,
+		type: 'warning', // warning, success, danger, info
+		opacity:0.9,
+		borderRadius:10,
+		clearTimeoutSeconds:3, // 0 for no timeout
+		animation:
+		{
+			duration:400	
+		},
 		container:
 		{
-			width:'30%'
+			id: 'jquery-alerts-container',
+			clas: 'jquery-alerts-container', // default container class
+			width: '50%',
+			x: 30,
+			y: 30
+		},
+		defaultHeaders:
+		{
+			warning: 'Warning',
+			success: 'Success',
+			danger: 'Error',
+			info: 'Information'
+		},
+		icon: // default icons for vaiours icon packages
+		{
+			fontawesome:
+			{
+				warning: 'fa fa-exclamation-triangle',
+				success: 'fa fa-thumbs-up',
+				danger: 'fa fa-times-circle-o',
+				info: 'fa fa-info-circle',	
+			}
 		}
 	}).data('alerts');
 
