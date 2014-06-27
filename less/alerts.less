@@ -1,22 +1,28 @@
+@import "common.less";
+
+
 
 .jquery-alert
 {
-	display: block;	
+	position: absolute;
+	display: block;
 
-	clear:right;
+
+	z-index:9999;
 	
-	width:300px;
+	padding:10px;
+	h3
+	{
+		margin:0;
+		
+	}
+}
+
 	
-	margin-bottom:15px;
-	
-	opacity: 0;
-	/*
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=90)";
-	filter: alpha(opacity=90);
-	-moz-opacity: 0.9;
-	-khtml-opacity: 0.9;
-	opacity: 0.9;
-	*/
+.jquery-alert-warning
+{
+	background: #fcf8e3;
+	border:1px solid #faebcc;
 }
 
 #jquery-alerts-container
@@ -29,10 +35,4 @@
 	display: table;
 	
 	padding:15px;
-}
-
-#jquery-alerts-container .alert
-{
-	margin-bottom:0;
-	
 }

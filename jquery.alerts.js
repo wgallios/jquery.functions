@@ -1,4 +1,131 @@
-(function($){
+;(function($){
+ 
+ 	var defaults = 
+	{
+		debug: false,
+		type: 'warning', // warning, success, danger, info
+		width: '300px',
+		height: 'auto',
+		x: 15,
+		y: 15,
+		opacity:0.95,
+		borderRadius:10,
+		clearTimeoutSeconds:3, // 0 for no timeout
+		defaultHeaders:
+		{
+			warning: 'Warning',
+			success: 'Success',
+			danger: 'Danger',
+			info: 'Information'
+		}
+	};
+ 	
+ 	function alerts (el, options)
+	{
+		this.options = $.extend(true, {}, defaults, options);
+		this.$el = $(el);
+		this.index = this.$el.index();
+		
+
+		// checks if the velocity plugin is enabled
+		this.velocity = (jQuery().velocity) ? true : false;
+
+		this.init();
+	}
+	
+	var fn = alerts.prototype;
+	
+	fn.init = function ()
+	{
+
+	}
+
+	fn.buildAlert = function (type, msg, header)
+	{
+	
+		var o = this.options;
+	
+		if (type == undefined) type = o.type;
+		
+		var $alert = $("<div>", { class:'jquery-alert jquery-alert-' + type });
+			
+		console.log(this.options);
+		console.log(o);
+						
+		$alert.css('opacity', 0)
+			.css('width', o.width)
+			.css('height', o.height)
+			.css('left', o.x)
+			.css('top', o.y)
+			.css('border-radius', o.borderRadius);
+		
+		var html = "<h3>" + o.header + "</h3>" + 
+		"<span class='alert-text'>" + msg + "</span>";
+		
+		
+		$alert.append(html);
+		
+		this.$el.prepend($alert);
+		
+		if (this.velocity)
+		{
+			$alert.velocity({ opacity:o.opacity });
+		}
+		else
+		{
+			$alert.css('opacity', o.opacity);
+		}
+		
+		return $alert;
+	}
+	
+	fn.warning = function (msg, header)
+	{
+		var t = this;
+		
+		if (msg == undefined || msg == '') return false;
+		
+		if (header == undefined) header = this.options.defaultHeaders.warning;
+		
+		var $alert = this.buildAlert('warning', msg, header);
+		
+		if (t.options.clearTimeoutSeconds > 0)
+		{
+			setTimeout(function(){
+				t.clearAlert($alert);
+			}, (t.options.clearTimeoutSeconds * 1000));	
+		}
+		
+	}
+
+	fn.clearAlert = function ($alert)
+	{
+		if (this.velocity)
+		{
+			$alert.velocity({ opacity:0 });
+		}
+		else
+		{
+			$alert.css('opacity', 0);
+		}
+		
+	}
+
+	// jquery adapter
+	$.fn.alerts = function (options)
+	{
+		return this.each(function(){
+			if (!$(this).data('alerts'))
+			{
+				$(this).data('alerts', new alerts(this, options));
+			}
+		});
+	};
+	
+	
+	$.alerts = fn;
+	/*
+	
     $.fn.alerts = function (msg, options)
     {
     
@@ -69,6 +196,8 @@
 		//alert(msg);
 
     }
+    
+    */
 })(jQuery);
 
 
