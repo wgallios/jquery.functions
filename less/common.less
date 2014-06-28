@@ -1,8 +1,12 @@
 @fontsize:1em;
 @color: #aeaeae;
 @borderColor:#c9c6ff;
+@borderRadius:4px;
 @borderThickness:2px;
 @highlight:#fcf8cb;
+
+@arrowSize:5px;
+@arrowColor:#333;
 
 .font
 {
@@ -16,4 +20,74 @@
 	-webkit-box-shadow: 1px 1px 5px 2px #C4C4C4;
 	-moz-box-shadow: 1px 1px 5px 2px #C4C4C4;
 	box-shadow: 1px 1px 5px 2px #C4C4C4;
+}
+
+.borderRadius
+{
+    -webkit-border-radius:@borderRadius;
+    -moz-border-radius:@borderRadius;
+    border-radius:@borderRadius;
+}
+
+.fullscreen(@pos, @z:9999)
+{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	z-index: @z;
+	top:0;
+	left:0;
+};
+
+.caret-common
+{
+	  display: inline-block;
+	  width: 0;
+	  height: 0;
+	  margin-left: 2px;
+	  vertical-align: middle;
+
+}
+
+.caret
+{
+	.caret-common;
+	
+	border-top:   @arrowSize solid;
+	border-right: @arrowSize solid transparent;
+	border-left:  @arrowSize solid transparent;
+}
+
+.caret-up
+{
+	.caret-common;
+	
+	border-top: 0;
+    border-bottom: @arrowSize solid;
+    
+	border-right: @arrowSize solid transparent;
+	border-left:  @arrowSize solid transparent;
+
+    content: "";
+}
+
+.caret-right
+{
+	.caret-common;
+	
+	border-left: @arrowSize solid;
+	border-right: 0;
+	border-top: @arrowSize solid transparent;
+	border-bottom:  @arrowSize solid transparent;
+}
+
+
+.caret-left
+{
+	.caret-common;
+	
+	border-left: @arrowSize solid;
+	border-right: 0;
+	border-top: @arrowSize solid transparent;
+	border-bottom:  @arrowSize solid transparent;
 }

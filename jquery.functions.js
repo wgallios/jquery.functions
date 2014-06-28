@@ -36,6 +36,13 @@ String.prototype.nl2br = function()
 }
 
 
+// no right click context menu; usage: norightclick(); - easy peasy
+
+Window.prototype.norightclick = function ()
+{
+	$(document).bind("contextmenu",function(e){ return false; });
+}
+
 ;(function($){
 	'use strict';
 	
@@ -317,8 +324,9 @@ String.prototype.nl2br = function()
 	$.min = function (src)
 	{
 		///min/?{$method}={$path}{$name}{$debug}{$version}
-		var minv = $('body').data('minv');
-		var mindebug = $('body').data('mindebug');
+		
+		var minv = $('head').data('minv');
+		var mindebug = $('head').data('mindebug');
 		
 		src = "/min/?f=" + src;
 		
@@ -443,6 +451,26 @@ String.prototype.nl2br = function()
 
 		if (check > -1) return true;
 		else return false;
+	}
+	
+	
+	$.fn.selectSelectableElement = function (element)
+	{
+		var t = this;
+		
+		// add unselecting class to all elements in the styleboard canvas except current one
+        jQuery("li", t).each(function() {
+	        if (this != element[0])
+	        {
+	            jQuery(this).removeClass("ui-selected").addClass("ui-unselecting");
+	        }
+        });
+
+        // add ui-selecting class to the element to select
+        element.addClass("ui-selecting");
+console.log($(t).data("selectable"));
+        // trigger the mouse stop event (this will select all .ui-selecting elements, and deselect all .ui-unselecting elements)
+        $(t.data("selectable"))._mouseStop(null);
 	}
 	
 
