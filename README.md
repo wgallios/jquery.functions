@@ -39,9 +39,8 @@ Extra jQuery functions I use.
 
 <h3>Usage</h3>
 	
-	var alert = $('body').alerts({
+	var options = {
 		debug: false,
-		type: 'warning', // warning, success, danger, info
 		opacity:0.9,
 		borderRadius:10,
 		clearTimeoutSeconds:3, // 0 for no timeout
@@ -74,12 +73,12 @@ Extra jQuery functions I use.
 				info: 'fa fa-info-circle',	
 			}
 		}
-	}).data('alerts');
-
-	alert.warning("Oh nooo");
-	alert.success("Good Job");
-	alert.danger("Oh my Bob");
-	alert.info("info");
+	};
+	
+	Warning("Alert Message!"[, 'Alert'[, options]]);
+	Success("Success Message"[, 'Success'[, options]]);
+	Danger("Dangerr! Oh noooo"[, 'Danger'[, options]]);
+	Info("Information Message"[, 'Info'[, options]]);
 	
 <h2>License</h2>
 

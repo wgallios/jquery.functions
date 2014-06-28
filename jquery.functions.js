@@ -330,8 +330,8 @@ Window.prototype.norightclick = function ()
 		
 		src = "/min/?f=" + src;
 		
-		if (minv !== undefined) src += "&amp;" + minv;
-		if (mindebug !== undefined) src += '&amp;debug';
+		if (minv !== undefined) src += "&" + minv;
+		if (mindebug !== undefined) src += '&debug';
 		
 		return src;
 	}

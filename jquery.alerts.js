@@ -35,10 +35,12 @@
 				danger: 'fa fa-times-circle-o',
 				info: 'fa fa-info-circle',	
 			}
-		}
+		},
+		initHeader: undefined,
+		initmsg: undefined
 	};
  	
- 	function alerts (el, options)
+ 	function alerts (el, msg, header, options)
 	{
 		this.options = $.extend(true, {}, defaults, options);
 		this.$el = $(el);
@@ -48,18 +50,26 @@
 		// checks if the velocity plugin is enabled
 		this.velocity = (jQuery().velocity) ? true : false;
 
-		this.init();
+		this.init(msg, header);
+		
+		return this;
 	}
 	
 	var fn = alerts.prototype;
 	
-	fn.init = function ()
+	fn.init = function (msg, header)
 	{
-		this.checkFontAwesome();
-		this.buildContainer();
+		var t = this;
+		
+		t.checkFontAwesome();
+		t.buildContainer(function($container){
+			t.buildAlert($container, msg, header);
+		});
+		
+
 	}
 	
-	fn.buildContainer = function ()
+	fn.buildContainer = function (sf)
 	{
 		var o = this.options;
 		
@@ -71,21 +81,28 @@
 				.css('top', o.container.x)
 				.css('left', o.container. y);
 			
-			this.$container = $container;
+			//this.$container = $container;
 		
-			this.$el.prepend($container);
+			$('body').prepend($container);
+		}
+		else
+		{
+			$container = $('#' + o.container.id);
 		}
 		
-		return true;
+		if (sf !== undefined && typeof sf == 'function') sf($container);
+		
+		
+		return $container;
 	}
 
-	fn.buildAlert = function (type, msg, header)
+	fn.buildAlert = function ($container, msg, header)
 	{
 		var t = this;
 	
 		var o = this.options;
 	
-		if (type == undefined) type = o.type;
+		type = o.type;
 
 		type = type.toLowerCase(); // ensures type is lower case
 		
@@ -117,7 +134,7 @@
 		
 		$alert.append(html);
 		
-		this.$container.prepend($alert);
+		$container.prepend($alert);
 				
 		var h = $alert.outerHeight(); // gets final height for alert
 		
@@ -139,61 +156,11 @@
 				.css('height', '');
 		}
 		
+		t.setAlertTimeout($alert);
+		
 		return $alert;
 	}
-	
-	fn.warning = function (msg, header)
-	{
-		var t = this;
-		
-		if (msg == undefined || msg == '') return false;
-		
-		if (header == undefined) header = this.options.defaultHeaders.warning;
-		
-		var $alert = this.buildAlert('warning', msg, header);
-		
-		t.setAlertTimeout($alert);
-	}
-	
-	fn.success = function (msg, header)
-	{
-		var t = this;
-		
-		if (msg == undefined || msg == '') return false;
-		
-		if (header == undefined) header = this.options.defaultHeaders.success;
-		
-		var $alert = this.buildAlert('success', msg, header);
-		
-		t.setAlertTimeout($alert);
-	}
 
-	fn.danger = function (msg, header)
-	{
-		var t = this;
-		
-		if (msg == undefined || msg == '') return false;
-		
-		if (header == undefined) header = this.options.defaultHeaders.danger;
-		
-		var $alert = this.buildAlert('danger', msg, header);
-		
-		t.setAlertTimeout($alert);
-	}
-	
-	fn.info = function (msg, header)
-	{
-		var t = this;
-		
-		if (msg == undefined || msg == '') return false;
-		
-		if (header == undefined) header = this.options.defaultHeaders.info;
-		
-		var $alert = this.buildAlert('info', msg, header);
-		
-		t.setAlertTimeout($alert);
-	}
-	
 	fn.setAlertTimeout = function ($alert)
 	{
 		var t = this;
@@ -251,94 +218,48 @@
 		}
 		
 	}
+	
 
 	// jquery adapter
-	$.fn.alerts = function (options)
+	$.fn.alerts = function (msg, header, options)
 	{
 		return this.each(function(){
 			if (!$(this).data('alerts'))
 			{
-				$(this).data('alerts', new alerts(this, options));
+				$(this).data('alerts', new alerts(this, msg, header, options));
 			}
 		});
 	};
 	
 	
 	$.alerts = fn;
-	/*
-	
-    $.fn.alerts = function (msg, options)
-    {
-    
-    	if (options == undefined) options = {};
-    
-    	var html = '';
-        var header = "Alert!";
-        
-    	if (msg == undefined || msg == '')
-    	{
-			return false;
-    	}
-    	
-	    if (options.type == undefined)
-	    {
-	        options.type = 'warning';
-	    }
-	
-		// checks if container has been created
-		if ($('#jquery-alerts-container').length <= 0)
-		{
-			this.prepend("<div id='jquery-alerts-container'></div>");
-		}
-	
 
-	
-	    if (options.type == 'danger') header = "<i class='fa fa-times-circle-o'></i> Error";
-	    if (options.type == 'info') header = "<i class='fa fa-exclamation-circle'></i> Information";
-	    if (options.type == '-success') header = "<i class='fa fa-thumbs-up'></i> Success";
-	
-
-    	html = "<div class='jquery-alert'>" +
-    	"<div class='alert alert-" + options.type + "'>" +
-    	"<button type='button' class='close' data-dismiss='alert'>&times;</button><h4>" + header + "</h4>" +
-    	msg +
-    	"<div class='clearfix'></div>" + 
-    	"</div> <!-- /.alert -->" +
-    	"</div> <!-- /.jquery-alert -->";
-    	
-
-
-		this.find('#jquery-alerts-container').prepend(html);
-		
-		$('#jquery-alerts-container').find('.jquery-alert').each(function(index, item){
-			// checks opacity
-			//console.log($(item).css('opacity'));
-			
-			if ($(item).css('opacity') == 0)
-			{
-				$(item).velocity({ opacity:0.9 }, {
-					duration: 500
-				});
-				
-				// set a timeout
-				setTimeout(function(){
-					$(item).velocity({ opacity:0 }, {
-						complete: function(){
-							$(this).remove();
-						}
-					});
-				}, 3000)
-			}
-		});
-		
-		// fades element in
-		//$('#jquery-alerts-container .jquery-alert').last().velocity({ opacity:1 });
-
-		//alert(msg);
-
-    }
-    
-    */
 })(jQuery);
 
+Window.prototype.Warning = function (msg, header, options)
+{
+	if (options == undefined) options = {};
+	
+	return jQuery.alerts.constructor(this, msg, header, options);
+}
 
+Window.prototype.Success = function (msg, header, options)
+{
+	if (options == undefined) options = {};
+	
+	return jQuery.alerts.constructor(this, msg, header, $.extend(true, {}, options, { type: 'success' }));
+}
+
+Window.prototype.Danger = function (msg, header, options)
+{
+	if (options == undefined) options = {};
+	
+	return jQuery.alerts.constructor(this, msg, header, $.extend(true, {}, options, { type: 'danger' }));
+}
+
+Window.prototype.Info = function (msg, options)
+{
+	if (options == undefined) options = {};
+	
+	return jQuery.alerts.constructor(this, msg, header, $.extend(true, {}, options, { type: 'info' }));
+}
