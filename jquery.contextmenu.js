@@ -43,12 +43,13 @@
 			url: '',
 			obj: {}
 		},
-		selected: function(e, item, action){ }
+		selected: function(e, item, action, id){ }
 	};
 	
 	function contextMenu (el, options)
 	{
-		console.log('New Context Menu: ' + options.target);
+		//console.log('New Context Menu Created: ' + options.target);
+		
 		this.options = $.extend(true, {}, defaults, options);
 	
 	
@@ -111,7 +112,7 @@
 	
 
 	fn.refreshTargets = function ()
-	{
+	{		
 		var t = this;
 		
 		$(t.containers).each(function(i, m){
@@ -144,16 +145,20 @@
 	            
 	                    $(document).bind("contextmenu",function(e){ return false; });
 	                    
+	                    t.currentTarget = e.currentTarget;
+	                    
+	                    //if (t.options.selected !== undefined && typeof t.options.selected == 'function') t.options.selected(e);
+	                    			
 	            		if (t.$el.data('showContextMenu') == true)
 						{
-							t.moveContainerToMouse($c);
+							t.moveContainerToMouse($c, e);
 						}
 						else
 						{
 		                    $c.css('top', String(e.pageY) + 'px');
 		                    $c.css('left', String(e.pageX) + 'px');
 		                    
-		                    t.show($c);	
+		                    t.show($c, e);	
 						}
 	                    
 	
@@ -213,11 +218,11 @@
 
 	}
 	
-	fn.moveContainerToMouse = function ($c)
+	fn.moveContainerToMouse = function ($c, e)
 	{
 		var t = this;
 		
-		t.move($c, t.mx, t.my);
+		t.move($c, t.mx, t.my, e);
 		return true;
 	}
 	
@@ -285,7 +290,7 @@
 	}
 	
 	// show container
-	fn.show = function ($c, sf)
+	fn.show = function ($c, sf, e)
 	{
 		var t = this;
 
@@ -295,7 +300,7 @@
 		
 		if (t.$el.data('showContextMenu') == true)
 		{
-			t.moveContainerToMouse($c);
+			t.moveContainerToMouse($c, e);
 		}
 
 		$c.css('display', '');
@@ -324,7 +329,7 @@
 		}
 	}
 	
-	fn.move = function ($c, x, y)
+	fn.move = function ($c, x, y, e)
 	{
 		var t = this;
 		
@@ -401,12 +406,13 @@
 		
 		if (typeof obj == 'object')
 		{
-			console.log(obj);
+			//console.log(obj);
 			$(obj).each(function(i, el){
 
 				var $el = $(el);
+				//console.log(el.id);
 
-				var $li = t.createLI(el.name, el.action, el.iconClass);
+				var $li = t.createLI(el.name, el.action, el.iconClass, el.id);
 
 				if (el.children !== undefined && typeof el.children == 'object')
 				{				
@@ -459,17 +465,19 @@
 		if (children == undefined) return false;
 	}
 	
-	fn.createLI = function (name, action, iconClass)
+	fn.createLI = function (name, action, iconClass, id)
 	{	
 		if (name == undefined) return false;
 
 		var t = this;
 				
 		//var $el = t.$el;
-		
+
 		var $li = $("<li>", { class:'' });
 		
 		if (action !== undefined) $li.data('action', action);
+
+		if (id !== undefined) $li.data('id', id);
 		
 		if (iconClass !== undefined) $li.prepend("<i class='" + iconClass + "'></i> ");
 		
@@ -478,7 +486,8 @@
 			
 			if (action !== undefined) t.$el.trigger('click', action);
 			
-			if (t.options.selected !== undefined && typeof t.options.selected == 'function') t.options.selected(e, $li, action);
+			//console.log('SF ID: ' + id);
+			if (t.options.selected !== undefined && typeof t.options.selected == 'function') t.options.selected(e, t.currentTarget, action, id);
 		})
 		
 		

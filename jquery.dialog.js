@@ -2,6 +2,8 @@
  
  	var defaults = 
 	{
+		target: 'body',
+		header: undefined,
 		debug: false,
 		zoom: 90,
 		height:150,
@@ -14,12 +16,14 @@
 		accept:
 		{
 			show: true,
+			close: true,
 			text: "Ok",
 			clickFunction: function() {}
 		},
 		deny:
 		{
-			show: true,
+			show: false,
+			close: true,
 			text: "Cancel",
 			clickFunction: function() {}
 		}		
@@ -27,6 +31,7 @@
 	
 	function Dialog (el, msg, options)
 	{
+		global.log("New Dialog: " + msg);
 		this.options = $.extend(true, {}, defaults, options);
 		this.$el = $(el);
 
@@ -45,6 +50,7 @@
 	fn.init = function (msg)
 	{
 		var t = this;
+		
 		
 		t.wrapContent(function($wrap, $container){
 			t.zoomOut($wrap);
@@ -69,13 +75,11 @@
 		
 		this.margin = $('body').css('margin');
 		
-		
 		this.orgColor = bgColor;
 		this.orgImg = bgImg;
 		this.orgRepeat = bgRepeat;
-		
-		var h = $(window).height();
-		var w = $(window).width();
+
+
 		
 		$div = $("<div>", { id: 'dialog-content-backdrop' });
 		
@@ -87,32 +91,51 @@
 		
 		$div.css('backgroundColor', '#333333')
 			.css('opacity', 0);
+			
+			
+
 		
-		$wrap.css('backgroundColor', bgColor)
-			.css('backgroundImage', bgImg)
-			.css('backgroundRepeat', bgRepeat)
+		//$('body > div').css('overflow', 'hidden');
+		/*
+		$wrap.css('backgroundColor', t.orgColor)
+			.css('backgroundImage', t.orgImg)
+			.css('backgroundRepeat', t.orgRepeat)
 			.css('width', w)
+			.css('height', h)
 			.css('padding-top', t.paddingTop)
 			.css('padding-left', t.paddingLeft)
 			.css('padding-bottom', t.paddingBottom)
 			.css('padding-right', t.paddingRight)
 			.css('overflow', 'hidden');
 			
-		var html = $('body').html();
+		var html = $.parseHTML($('body').html());
 		
 		$wrap.append(html);
 		$wrap.append($div);
-				
+
+
+		
 		$(document.body).html( $wrap );
+		*/
+		
+		$('body')
+			.prepend($div)
+			.prepend($container);		
 
-		$('body').prepend($container);		
+		var h = $div.height();
+		var w = $div.width();
 
-
+		
+		$('body').css('width', w)
+			.css('height', h)
+			.css('overflow', 'hidden');
+		
+		$('html, body').css('backgroundColor', '');
 				
 		$('body').css('backgroundColor', '#333')
 			.css('backgroundImage', 'none')
-			.css('padding', 0)
-			.css('margin', 0);
+			//.css('padding', 0)
+			//.css('margin', 0);
 		
 		if (sf !== undefined && typeof sf == 'function') sf($wrap, $container);
 		//jQuery("body").html().detach().appendTo($wrap);
@@ -123,20 +146,31 @@
 	fn.zoomOut = function ($wrap)
 	{
 		var zoom = this.options.zoom / 100;
+		
 		var t = this;
 
-		//$('html, body').velocity("scroll", 400);
-		$('body').velocity({ paddingTop:0, paddingLeft:0, paddingRight:0, paddingBottom:0, margin:0 });
+
+		var backDropH = (100 - t.options.zoom) + 100;
 		
-		$wrap.velocity({
+		$(window).trigger('dialog.before.zoomout');
+
+		//$('html, body').velocity("scroll", 400);
+		//$('body').velocity({ paddingTop:0, paddingLeft:0, paddingRight:0, paddingBottom:0, margin:0 });
+
+		$('#dialog-content-backdrop').velocity({ opacity:t.options.backdropOpacity, height:backDropH + '%'});
+		
+		$('body').velocity({
 			scaleX:zoom,
 			scaleY:zoom
 		}, {
-			duration:t.options.duration
+			duration:t.options.duration,
+			complete:function(){
+				$(window).trigger('dialog.after.zoomout');
+			}
 		});
 		
-		$('#dialog-content-backdrop').velocity({ opacity:t.options.backdropOpacity });
-		
+
+		//$('#dialog-content-backdrop').foggy();		
 	}
 	
 	
@@ -156,12 +190,20 @@
 		var $closeBtn = $("<button>", { type:'button', class:'close-alert' });
 		$closeBtn.html('&times;');
 		
+		$closeBtn.click(function(e){
+			t.destroy($dc);
+		});
+		
 		if (t.options.closeBtn) $header.append($closeBtn);
-		$header.append("<h3>Title</h3>");
+		if (t.options.header !== undefined) $header.append("<h3>" + t.options.header + "</h3>");
 
 		$dc.prepend($header);
+		
 		$dc.append($body);
+		
 		$dc.append($footer);
+
+		
 
 		
 		if (t.options.accept.show)
@@ -171,9 +213,13 @@
 			$okBtn.click(function(e){
 				e.preventDefault();
 				
+				$(this).attr('disabled', 'disabled');
+				
+				if (t.options.accept.clickFunction !== undefined && typeof t.options.accept.clickFunction == 'function') t.options.accept.clickFunction(e);
+				
 				$(window).trigger('dialog.ok');
 				
-				t.destroy($dc);
+				if (t.options.accept.close) t.destroy($dc);
 			});
 			
 			$footer.append($okBtn);
@@ -186,10 +232,15 @@
 			
 			$denyBtn.click(function(e){
 				e.preventDefault();
-			
+				
+				$(this).attr('disabled', 'disabled');
+											
 				$(window).trigger('dialog.cancel');
 			
-				t.destroy($dc);
+				if (t.options.deny.close) t.destroy($dc);
+				
+				if (t.options.deny.clickFunction !== undefined && typeof t.options.deny.clickFunction == 'function') t.options.deny.clickFunction(e);
+				
 			});
 			
 			$footer.prepend($denyBtn);
@@ -218,7 +269,7 @@
 		
 		$dc.velocity({ opacity:1 });
 		
-		/*
+		/*\
 		$dc.velocity({ width:(t.options.width + bounce), height:(t.options.height + bounce) }, {
 			complete:function ()
 			{
@@ -235,10 +286,12 @@
 		var t = this;
 		
 	
-		$dc.velocity({ opacity:0 }, {
+		$('#dialog-content-container').velocity({ opacity:0 }, {
 			complete:function()
 			{
-				$(this).remove();
+				$('#dialog-content-container').remove();
+				
+				$(window).trigger('dialog.destroy');
 			}
 		});
 
@@ -250,27 +303,53 @@
 				$(this).remove();
 			}
 		});
-						
-		$('#dialog-content-wrapper').velocity({
+					
+		$('body').velocity({
 			scaleX:1,
 			scaleY:1
 		}, {
 			duration:t.options.duration,
 			complete:function()
 			{
-					$('body').velocity({ 
-			paddingTop:t.paddingTop, 
-			paddingLeft:t.paddingLeft,
-			paddingBottom:t.paddingBottom, 
-			paddingRight:t.paddingRight,  
-			margin:t.margin 
-			});
+				setTimeout(function(){
+				t.$el.removeData('Dialog');
 				
-				$('body').css('backgroundColor', '')
-					.css('backgroundImage', this.orgImg)
-					.css('backgroundRepeat', this.orgRepeat);
+				
+				$('body').css('width', '')
+					.css('height', '')
+					.css('overflow', '')			
+					.css('backgroundColor', t.orgColor)
+					.css('backgroundImage', t.orgImg)
+					.css('backgroundRepeat', t.orgRepeat);						
+				}, 1000)
+			
+				/*
+				$('#dialog-content-wrapper').css('overflow', '');
+						
+				$('html, body').css('backgroundColor', '');
+				
+				$('body').css('backgroundColor', this.orgColor);
+				$('body').css('backgroundImage', this.orgImg);
+				$('body').css('backgroundRepeat', this.orgRepeat);
+				
+				$('body').css('padding-top', t.paddingTop)
+						.css('padding-left', t.paddingLeft)
+						.css('padding-bottom', t.paddingBottom)
+						.css('padding-right', t.paddingRight);
+				
+				
+				$('#dialog-content-wrapper').css('padding-top', '0px')
+						.css('padding-left', '0px')
+						.css('padding-bottom', '0px')
+						.css('padding-right', '0px');
 				
 				$(document.body).html( $('#dialog-content-wrapper').html() );
+				*/
+				
+
+
+				 
+				$('body').redraw();
 			}
 		});
 		

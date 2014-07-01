@@ -257,7 +257,7 @@ Window.prototype.Danger = function (msg, header, options)
 	return jQuery.alerts.constructor(this, msg, header, $.extend(true, {}, options, { type: 'danger' }));
 }
 
-Window.prototype.Info = function (msg, options)
+Window.prototype.Info = function (msg, header, options)
 {
 	if (options == undefined) options = {};
 	

@@ -14,8 +14,21 @@
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); /* IE6-9 */
 };
 
+#dialog-content-backdrop::before
+{
+	-webkit-filter: blur(1px);
+	-moz-filter: blur(1px);
+	-ms-filter: blur(1px);
+	-o-filter: blur(1px);
+	filter: blur(1px);
+	
+}
 #dialog-content-backdrop
 {
+
+	color: transparent;
+   text-shadow: 0 0 5px rgba(0,0,0,0.5);
+
 	.fullscreen(absolute, 5000);
 
 }
@@ -35,7 +48,8 @@
 	
 	position: relative;
 	
-	min-width: 400px;
+	max-width: 95%;
+	min-width: 250px;
 	
 	display:inline-block;
 	

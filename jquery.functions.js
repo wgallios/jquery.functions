@@ -321,14 +321,15 @@ Window.prototype.norightclick = function ()
 
 	}
 	
-	$.min = function (src)
+	$.min = function (src, method)
 	{
+		if (method == undefined) method = 'f';
 		///min/?{$method}={$path}{$name}{$debug}{$version}
 		
 		var minv = $('head').data('minv');
 		var mindebug = $('head').data('mindebug');
 		
-		src = "/min/?f=" + src;
+		src = "/min/?" + method +"=" + src;
 		
 		if (minv !== undefined) src += "&" + minv;
 		if (mindebug !== undefined) src += '&debug';
