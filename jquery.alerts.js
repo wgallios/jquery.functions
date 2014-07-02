@@ -15,7 +15,7 @@
 		{
 			id: 'jquery-alerts-container',
 			clas: 'jquery-alerts-container', // default container class
-			width: '50%',
+			width: '30%',
 			x: 30,
 			y: 30
 		},
@@ -37,7 +37,8 @@
 			}
 		},
 		initHeader: undefined,
-		initmsg: undefined
+		initmsg: undefined,
+		display: true // if False just returns HTML
 	};
  	
  	function alerts (el, msg, header, options)
@@ -50,9 +51,16 @@
 		// checks if the velocity plugin is enabled
 		this.velocity = (jQuery().velocity) ? true : false;
 
-		this.init(msg, header);
+		if (this.options.display)
+		{
+			this.init(msg, header);
 		
-		return this;
+			return this;
+		}
+		else
+		{
+			return this.buildAlert(undefined, msg, header);
+		}
 	}
 	
 	var fn = alerts.prototype;
@@ -72,22 +80,26 @@
 	fn.buildContainer = function (sf)
 	{
 		var o = this.options;
+		var t = this;
 		
-		if ($('#' + o.container.id).length <= 0)
+		var c = $(t.$el).find('.' + o.container.clas).first();
+		
+		if (c.length <= 0)
 		{
-			$container = $("<div>", {id: o.container.id, class: o.container.clas});
+			$container = $("<div>", {class: o.container.clas});
 			
-			$container.css('width', o.container.width)
-				.css('top', o.container.x)
-				.css('left', o.container. y);
+			$container.css('width', o.container.width);
+//				.css('padding', '30px');
+	//			.css('top', o.container.x)
+	//			.css('left', o.container. y);
 			
 			//this.$container = $container;
 		
-			$('body').prepend($container);
+			$(t.$el).prepend($container);
 		}
 		else
 		{
-			$container = $('#' + o.container.id);
+			$container = $(c);
 		}
 		
 		if (sf !== undefined && typeof sf == 'function') sf($container);
@@ -134,7 +146,7 @@
 		
 		$alert.append(html);
 		
-		$container.prepend($alert);
+		if ($container !== undefined) $container.prepend($alert);
 				
 		var h = $alert.outerHeight(); // gets final height for alert
 		
@@ -234,32 +246,37 @@
 	
 	$.alerts = fn;
 
+	$.fn.Warning = function (msg, header, options)
+	{
+		return $(this).alerts(msg, header, options);
+	}
+
 })(jQuery);
 
 Window.prototype.Warning = function (msg, header, options)
 {
 	if (options == undefined) options = {};
 	
-	return jQuery.alerts.constructor(this, msg, header, options);
+	return jQuery.alerts.constructor($('body'), msg, header, options);
 }
 
 Window.prototype.Success = function (msg, header, options)
 {
 	if (options == undefined) options = {};
 	
-	return jQuery.alerts.constructor(this, msg, header, $.extend(true, {}, options, { type: 'success' }));
+	return jQuery.alerts.constructor($('body'), msg, header, $.extend(true, {}, options, { type: 'success' }));
 }
 
 Window.prototype.Danger = function (msg, header, options)
 {
 	if (options == undefined) options = {};
 	
-	return jQuery.alerts.constructor(this, msg, header, $.extend(true, {}, options, { type: 'danger' }));
+	return jQuery.alerts.constructor($('body'), msg, header, $.extend(true, {}, options, { type: 'danger' }));
 }
 
 Window.prototype.Info = function (msg, header, options)
 {
 	if (options == undefined) options = {};
 	
-	return jQuery.alerts.constructor(this, msg, header, $.extend(true, {}, options, { type: 'info' }));
+	return jQuery.alerts.constructor($('body'), msg, header, $.extend(true, {}, options, { type: 'info' }));
 }
