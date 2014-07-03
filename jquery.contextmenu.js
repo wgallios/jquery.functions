@@ -3,106 +3,188 @@
 	
 	
 	data.obj = 
-	{
+	[
 		{ name: 'Add', action: 'add', iconClass:'fa fa-plus' },
 		{ name: 'Delete', action: 'delete', iconClass:'fa fa-trash-o' },
 		{ name: 'Folders', action: '', iconClass:'fa fa-folder', children:
-			{
-				{ name: 'Test', action: 'folder-test', iconClass:'fa fa-folder' },
-				{ name: 'Another Test', action: 'folder-anotherTest', iconClass:'fa fa-folder' }
-			} 
+			[
+				{ name: 'Test', action: 'folder-test', id:1, iconClass:'fa fa-folder' },
+				{ name: 'Another Test', action: 'folder-anotherTest', id:2, iconClass:'fa fa-folder' }
+			] 
 		}
-	}
+	]
+	
+	// events
+	
+	element.rightclick - when element for the menu is right clicked on
+	
+	click - When a mneu item is click
+	
 */
 
 ;(function($) {
 
 	var defaults = 
 	{
+		target: undefined, // elements within container that require individual actions
 		debug: false,
+		ulClass: 'rightclick',
+		animation:
+		{
+			duration:200	
+		},
 		ajax:
 		{
-			method: 'get'	
+			method: 'get',
+			dataType: 'Intelligent Guess'
 		},
 		data:
 		{
 			url: '',
-			obj: {},
-			ulClass: 'rightclick'
+			obj: {}
 		},
-		selected: function(){ }
+		selected: function(e, item, action, id){ }
 	};
 	
 	function contextMenu (el, options)
 	{
+		//console.log('New Context Menu Created: ' + options.target);
+		
 		this.options = $.extend(true, {}, defaults, options);
+	
+	
+		if (this.options.target == undefined) throw new Error("Target is empty!");
 		
 		this.$el = $(el);
 		
 		this.index = this.$el.index();
 		
+
+		
+		this.containers = [];
+		
+		this.mx = -1;
+		this.my = -1;
+		
 		// checks if the velocity plugin is enabled
 		this.velocity = (jQuery().velocity) ? true : false;
 
-		this.init();
+		this._init();
 	}
 	
 	var fn = contextMenu.prototype;
 
-	fn.init = function ()
+	fn._init = function ()
 	{
 		var t = this;
 		
-		t.stopRegularRightClick();
-		t.build(function($c){
-				t.bindRightClick();
+		
+		t.$el.data('showContextMenu', false);
 				
-				if (t.options.data.url.length > 0) t.getSrc(); // gets source
-				else if (t.options.data.obj.length > 0) t.parseObj();
+		t._trackmouse();
+		
+		t.stopRegularRightClick();
+		t._build(function($c){
+				t.bindRightClick($c);
+				
+				if (t.options.data.url.length > 0) t.getSrc($c); // gets source
+				else if (t.options.data.obj.length > 0)
+				{
+					$c.append(t.parseObj(t.options.data.obj, t.options.ulClass));	
+				} 
 		}); // creates neccesary HTML elements
 	
 		
 
 	}
 	
-	fn.bindRightClick = function ()
+	fn._trackmouse = function ()
 	{
 		var t = this;
-		var $c = this.$container;
 		
-		this.$el.unbind('mousedown');
-		
-		this.$el.mousedown(function(e){
-            // console.log(e.which);
-            switch (e.which)
-            {
-                case 3:
-
-                    $(document).bind("contextmenu",function(e){ return false; });
-                    
-                    $c.css('top', String(e.pageY) + 'px');
-                    $c.css('left', String(e.pageX) + 'px');
-                    
-                    t.show();
-                    
-				break;
-            }
+		$(document).mousemove(function(event) {
+			t.mx = event.pageX;
+        	t.my = event.pageY;
+        	
+        	//t.debug("X: " + t.mx + " Y: " + t.my);
 		});
 	}
 	
-	fn.build = function (sf)
+
+	fn.refreshTargets = function ()
+	{		
+		var t = this;
+		
+		$(t.containers).each(function(i, m){
+			$c = $(m);
+			t.bindRightClick($c);
+		})
+	}
+	
+	fn.bindRightClick = function ($c)
 	{
+		var t = this;
+
+		//var $target = $(t.options.target);
+		
+		var $target = $(t.$el.find(t.options.target));
+		
+		
+		$target.each(function(i, el){
+			var $el = $(el);
+			
+			$el.unbind('mousedown');
+			
+			$el.mousedown(function(e){
+	
+	            switch (e.which)
+	            {
+	                case 3:
+	
+						t.$el.trigger('element.rightclick', $el);
+	            
+	                    $(document).bind("contextmenu",function(e){ return false; });
+	                    
+	                    t.currentTarget = e.currentTarget;
+	                    
+	                    //if (t.options.selected !== undefined && typeof t.options.selected == 'function') t.options.selected(e);
+	                    			
+	            		if (t.$el.data('showContextMenu') == true)
+						{
+							t.moveContainerToMouse($c, e);
+						}
+						else
+						{
+		                    $c.css('top', String(e.pageY) + 'px');
+		                    $c.css('left', String(e.pageX) + 'px');
+		                    
+		                    t.show($c, e);	
+						}
+	                    
+	
+	                    
+					break;
+	            }
+			});			
+		});
+	}
+	
+
+	
+	fn._build = function (sf)
+	{
+		var t = this;
+		
 		var $container = $("<div>", { class:'right-click-menu', style:"opacity:0;", id:'right-click-menu-' + this.index });
 		
-		$container.attr('data-contextmenu', 'true');
+		$container.data('contextmenu', true)
+			.css('display', 'none');
 		
-
-		this.$container = $container;
+		this.containers.push($container);
 
         $('body').append($container);
-        
-        // sets data that menu is not showing
-		this.$container.data('showContextMenu', false);
+        		
+		$container.data('showing', false);
 		
 		
         if (sf !== undefined && typeof sf == 'function') sf($container);
@@ -122,6 +204,7 @@
             if (e.which == '1')
             {
                 // clears previous right click if showing
+                
                 if ($el.data('showContextMenu') == true)
                 {
                 	
@@ -129,98 +212,148 @@
                     t.hideAllMenus();
 
                 }
+                
             }
         });
 
 	}
 	
-	fn.hide = function (sf, $el)
+	fn.moveContainerToMouse = function ($c, e)
 	{
-		if ($el == undefined) $el = this.$el;
+		var t = this;
 		
+		t.move($c, t.mx, t.my, e);
+		return true;
+	}
+	
+	fn.hide = function ($c, sf)
+	{
+		//if ($el == undefined) $el = this.$el;
+		
+		var t = this;
+		
+		$c.data('showing', false);
+						
 		if (this.velocity)
 		{
-			this.$container.velocity({  opacity:0 }, {
+			$c.velocity({  opacity:0 }, {
+				duration: t.options.animation.duration,
 				complete: function ()
 				{
-					$el.data('showContextMenu', false); 
+					$c.css('display', 'none');
+					
+					t.hideSubMenus($c);
+					
+					t.$el.data('showContextMenu', false); 
+
 					if (sf !== undefined && typeof sf == 'function') sf();
 				}
 			});
 		}
 		else
 		{
-			this.$container.fadeOut(400, function(){
-				$el.data('showContextMenu', false); 
+			$c.fadeOut(400, function(){
+							
+				$c.css('display', 'none');
+				t.$el.data('showContextMenu', false);
+				
+				t.hideSubMenus($c);
 								
 				if (sf !== undefined && typeof sf == 'function') sf();
 			});
 		}
+	}
+	
+	fn.hideSubMenus = function ($c)
+	{
+		$($c.find('ul ul')).css('opacity', 0).css('display', 'none');
+		
+		return true;
 	}
 	
 	fn.hideAllMenus = function ()
 	{
 		var t = this;
-		var $nodes = $("div[data-contextmenu='true']");
 		
-		$nodes.each(function(i, m){
+		
+		$(t.containers).each(function(i, m){
 			$m = $(m);
-			t.hide(undefined, $m);
 			
-		})
+			if ($m.data('showing'))
+			{
+				t.hide($m);
+							
+			}			
+		});
 		
-		this.$container.data('rightClickMenu', true);
+		return true;
 	}
 	
 	// show container
-	fn.show = function (sf, $el)
+	fn.show = function ($c, sf, e)
 	{
 		var t = this;
+
+				
+		//if ($el == undefined) $el = this.$el;
 		
-		if ($el == undefined) $el = this.$el;
 		
-		if ($el.data('showContextMenu') == true)
+		if (t.$el.data('showContextMenu') == true)
 		{
-			t.move(e.pageX, e.pageY, $el);
-			return true;
+			t.moveContainerToMouse($c, e);
 		}
-		
+
+		$c.css('display', '');
+		$c.data('showing', true);
+					
 		if (this.velocity)
 		{
-			this.$container.velocity({  opacity:1 }, {
+
+			$c.velocity({  opacity:1 }, {
+				duration: t.options.animation.duration,
 				complete: function ()
 				{
-					$el.data('showContextMenu', true); 
+					t.$el.data('showContextMenu', true); 
 					if (sf !== undefined && typeof sf == 'function') sf();
 				}
 			});
 		}
 		else
 		{
-			this.$container.fadeIn(400, function(){
-				$el.data('showContextMenu', true); 
+						
+			$c.fadeIn(400, function(){
+				t.$el.data('showContextMenu', true); 
 								
 				if (sf !== undefined && typeof sf == 'function') sf();
 			});
 		}
 	}
 	
-	fn.move = function (t, l, $el)
+	fn.move = function ($c, x, y, e)
 	{
-		if ($el == undefined) $el = this.$el;
+		var t = this;
+		
+		if ($c == undefined) return false;
 		
 		if (this.velocity)
 		{
-			$el.velocity({ top:t, left:l });
+			t.hide($c, function(){
+				$c.css('top', y);
+				$c.css('left', x);
+				
+				t.show($c);
+			
+			});
+
 		}
 		else
 		{
-			$el.css('top', t);
-			$el.css('left', l);			
+			$c.css('top', y);
+			$c.css('left', x);			
 		}
 	}
 
-	fn.getSrc = function ()
+	fn.getSrc = function ($c)
 	{
 		var t = this;
 		
@@ -228,12 +361,33 @@
 		
 		$.ajax({
 			url: o.data.url,
+			dataType: o.ajax.dataType,
 			type: o.ajax.method,
-			success: function (html)
+			success: function (data)
 			{
-				t.html = html;
+				//t.debug(data);
+									
+				if (o.ajax.dataType.toLowerCase() == 'json')
+				{
+					var $ul = t.parseObj(data, o.ulClass);
+					
+					//t.debug($ul);
+
+					$c.html($ul);
+					
+				}
+				else
+				{
+					// Regular HTML return
+					t.html = data;
 				
-				t.$container.html(html);
+					$c.html(data);
+										
+					$($c.find('ul ul')).addClass('submenu');
+					
+
+				}
+
 			}
 		});
 	}
@@ -248,21 +402,55 @@
 		var $ul = $("<ul>", { class: cls });
 		
 		
-		if (o.data.obj == undefined) throw new Error("Object data is undefined!");
+		if (obj == undefined) throw new Error("Object data is undefined!");
 		
-		if (typeof o.data.obj == 'object')
+		if (typeof obj == 'object')
 		{
-			$(o.data.obj).each(function(i, el){
-				var $el = $(el);
+			//console.log(obj);
+			$(obj).each(function(i, el){
 
-				var $li = t.createLI($el.name, $el.action, $el.iconClass);
-				
-				if ($el.chilren !== undefined && typeof $el.children == 'object')
-				{
-					var $childUL = t.parseObj($el.children);
+				var $el = $(el);
+				//console.log(el.id);
+
+				var $li = t.createLI(el.name, el.action, el.iconClass, el.id);
+
+				if (el.children !== undefined && typeof el.children == 'object')
+				{				
+					var $childUL = t.parseObj(el.children, 'submenu');
 					
+					$childUL.css('display', 'none');
+					
+					//t.debug($childUL);
+					
+					$li.append("<div class='caret-right'></div>");
+
+					$li.mouseenter(function(e){
+						$childUL.css('display', '');
+														
+						$childUL.velocity({ opacity:1 }, {
+							duration: t.options.animation.duration,
+							complete: function()
+							{
+
+							}
+						});
+						
+						$childUL.mouseleave(function(le){
+							$childUL.velocity({ opacity:0 }, {
+								duration: t.options.animation.duration,
+								complete: function()
+								{
+									$childUL.css('display', 'none');
+								}
+							});
+						});
+					});
+										
 					$li.append($childUL);
 				}
+				
+
+				
 				
 				$ul.append($li);
 
@@ -277,18 +465,46 @@
 		if (children == undefined) return false;
 	}
 	
-	fn.createLI = function (name, action, iconClass)
-	{
+	fn.createLI = function (name, action, iconClass, id)
+	{	
 		if (name == undefined) return false;
-		
+
+		var t = this;
+				
+		//var $el = t.$el;
+
 		var $li = $("<li>", { class:'' });
 		
 		if (action !== undefined) $li.data('action', action);
+
+		if (id !== undefined) $li.data('id', id);
 		
 		if (iconClass !== undefined) $li.prepend("<i class='" + iconClass + "'></i> ");
+		
+		$li.click(function(e){
+			e.preventDefault();
+			
+			if (action !== undefined) t.$el.trigger('click', action);
+			
+			//console.log('SF ID: ' + id);
+			if (t.options.selected !== undefined && typeof t.options.selected == 'function') t.options.selected(e, t.currentTarget, action, id);
+		})
+		
+		
 		$li.append(name);
 		
 		return $li;
+	}
+	
+	fn.debug = function (msg)
+	{
+		if (this.options.debug)
+		{
+			if (console)
+			{
+				console.log(msg);
+			}
+		}
 	}
 
 	// jquery adapter

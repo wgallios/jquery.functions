@@ -36,6 +36,13 @@ String.prototype.nl2br = function()
 }
 
 
+// no right click context menu; usage: norightclick(); - easy peasy
+
+Window.prototype.norightclick = function ()
+{
+	$(document).bind("contextmenu",function(e){ return false; });
+}
+
 ;(function($){
 	'use strict';
 	
@@ -314,16 +321,18 @@ String.prototype.nl2br = function()
 
 	}
 	
-	$.min = function (src)
+	$.min = function (src, method)
 	{
+		if (method == undefined) method = 'f';
 		///min/?{$method}={$path}{$name}{$debug}{$version}
-		var minv = $('body').data('minv');
-		var mindebug = $('body').data('mindebug');
 		
-		src = "/min/?f=" + src;
+		var minv = $('head').data('minv');
+		var mindebug = $('head').data('mindebug');
 		
-		if (minv !== undefined) src += "&amp;" + minv;
-		if (mindebug !== undefined) src += '&amp;debug';
+		src = "/min/?" + method +"=" + src;
+		
+		if (minv !== undefined) src += "&" + minv;
+		if (mindebug !== undefined) src += '&debug';
 		
 		return src;
 	}
@@ -446,6 +455,99 @@ String.prototype.nl2br = function()
 	}
 	
 
+	$.fn.disableSpin = function (options)
+	{
+		var ds = $(this).data('disableSpin');
+		
+		if (ds !== undefined && ds == true) return false; // stops button from being called twice with function
+	
+		if (options == undefined) options = {};
+	
+		var defaults = 
+		{
+			disable: true,
+			spinClass: 'fa fa-spin fa-spinner'
+		}
+		
+		$(this).data('disableSpin', true)
+		
+		options = $.extend(true, {}, defaults, options);
+
+		//console.log(options);
+
+		var oVal = $(this).val();
+			
+
+		if (options.disable == true)
+		{
+			$(this).attr('disabled', 'disabled');
+		}
+		
+		var $i = $(this).find('i');
+		
+		if ($i == undefined)
+		{
+			$(this).data('i', false);
+			$(this).data('oVal', oVal);
+			
+			$i = $("<i>", { class: options.spinClass });
+			
+			$(this).prepend($i + ' ');
+		}
+		else
+		{
+			
+			var oClass = $i.attr('class');
+		
+			$(this).data('i', true);
+			$(this).data('oClass', oClass); // saves original class data for restoration later
+			
+			
+			$i.attr('class', options.spinClass ); // removes classes
+		}
+
+		return true;
+		
+	}
+	
+	$.fn.enableSpin = function ()
+	{
+		var ds = $(this).data('disableSpin');
+		
+		// ensures element has gone through disableSpin function first
+		if (ds == undefined || ds == false) return false;
+		
+		// checks if disabled, if so, enables btn
+		if ($(this).attr('disabled') == 'disabled')
+		{
+			$(this).removeAttr('disabled');
+		}
+		
+		var hadI = $(this).data('i');
+		
+		if (hadI)
+		{
+			var oClass = $(this).data('oClass');
+			
+			// restores original class
+			$(this).find('i').attr('class', oClass);
+		}
+		else
+		{
+			// removes <i> element
+			$(this).find('i').remove();
+			
+			var oVal = $(this).data('oVal');
+
+			// restores original value			
+			$(this).val(oVal);
+		}
+		
+		$(this).removeData(['disableSpin', 'i', 'oClass', 'oVal']);
+		
+		return true;
+	}
+
 	
 	$.fn.location = $.fn.location = function (url)
 	{
@@ -472,3 +574,13 @@ String.prototype.nl2br = function()
 	
 
 })(jQuery);
+
+
+Window.prototype.redirect = function (url)
+{
+	
+	jQuery.fn.location(url);
+	
+	return true;
+
+}

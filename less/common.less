@@ -1,8 +1,12 @@
 @fontsize:1em;
 @color: #aeaeae;
 @borderColor:#c9c6ff;
+@borderRadius:4px;
 @borderThickness:2px;
 @highlight:#fcf8cb;
+
+@arrowSize:5px;
+@arrowColor:#333;
 
 .font
 {
@@ -16,4 +20,91 @@
 	-webkit-box-shadow: 1px 1px 5px 2px #C4C4C4;
 	-moz-box-shadow: 1px 1px 5px 2px #C4C4C4;
 	box-shadow: 1px 1px 5px 2px #C4C4C4;
+}
+
+.borderRadius
+{
+    -webkit-border-radius:@borderRadius;
+    -moz-border-radius:@borderRadius;
+    border-radius:@borderRadius;
+}
+
+.fullscreen(@pos, @z:9999)
+{
+	position: @pos;
+	width: 100%;
+	height: 100%;
+	z-index: @z;
+	top:0;
+	left:0;
+	bottom: 0;
+	right:0;
+};
+
+.caret-common
+{
+	  display: inline-block;
+	  width: 0;
+	  height: 0;
+	  margin-left: 2px;
+	  vertical-align: middle;
+
+}
+
+.caret
+{
+	.caret-common;
+	
+	border-top:   @arrowSize solid;
+	border-right: @arrowSize solid transparent;
+	border-left:  @arrowSize solid transparent;
+}
+
+.caret-up
+{
+	.caret-common;
+	
+	border-top: 0;
+    border-bottom: @arrowSize solid;
+    
+	border-right: @arrowSize solid transparent;
+	border-left:  @arrowSize solid transparent;
+
+    content: "";
+}
+
+.caret-right
+{
+	.caret-common;
+	
+	border-left: @arrowSize solid;
+	border-right: 0;
+	border-top: @arrowSize solid transparent;
+	border-bottom:  @arrowSize solid transparent;
+}
+
+
+.caret-left
+{
+	.caret-common;
+	
+	border-left: @arrowSize solid;
+	border-right: 0;
+	border-top: @arrowSize solid transparent;
+	border-bottom:  @arrowSize solid transparent;
+}
+
+
+.close-alert
+{
+background: none repeat scroll 0 0 rgba(0, 0, 0, 0);
+border: 0 none;
+padding:0;
+cursor: pointer;
+color:#000;
+float: right;
+font-size: 16px;
+opacity: 0.2;
+line-height: 1;
+text-shadow: 0 1px 0 #fff;
 }
