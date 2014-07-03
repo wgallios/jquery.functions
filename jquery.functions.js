@@ -454,26 +454,99 @@ Window.prototype.norightclick = function ()
 		else return false;
 	}
 	
-	
-	$.fn.selectSelectableElement = function (element)
-	{
-		var t = this;
-		
-		// add unselecting class to all elements in the styleboard canvas except current one
-        jQuery("li", t).each(function() {
-	        if (this != element[0])
-	        {
-	            jQuery(this).removeClass("ui-selected").addClass("ui-unselecting");
-	        }
-        });
 
-        // add ui-selecting class to the element to select
-        element.addClass("ui-selecting");
-console.log($(t).data("selectable"));
-        // trigger the mouse stop event (this will select all .ui-selecting elements, and deselect all .ui-unselecting elements)
-        $(t.data("selectable"))._mouseStop(null);
+	$.fn.disableSpin = function (options)
+	{
+		var ds = $(this).data('disableSpin');
+		
+		if (ds !== undefined && ds == true) return false; // stops button from being called twice with function
+	
+		if (options == undefined) options = {};
+	
+		var defaults = 
+		{
+			disable: true,
+			spinClass: 'fa fa-spin fa-spinner'
+		}
+		
+		$(this).data('disableSpin', true)
+		
+		options = $.extend(true, {}, defaults, options);
+
+		//console.log(options);
+
+		var oVal = $(this).val();
+			
+
+		if (options.disable == true)
+		{
+			$(this).attr('disabled', 'disabled');
+		}
+		
+		var $i = $(this).find('i');
+		
+		if ($i == undefined)
+		{
+			$(this).data('i', false);
+			$(this).data('oVal', oVal);
+			
+			$i = $("<i>", { class: options.spinClass });
+			
+			$(this).prepend($i + ' ');
+		}
+		else
+		{
+			
+			var oClass = $i.attr('class');
+		
+			$(this).data('i', true);
+			$(this).data('oClass', oClass); // saves original class data for restoration later
+			
+			
+			$i.attr('class', options.spinClass ); // removes classes
+		}
+
+		return true;
+		
 	}
 	
+	$.fn.enableSpin = function ()
+	{
+		var ds = $(this).data('disableSpin');
+		
+		// ensures element has gone through disableSpin function first
+		if (ds == undefined || ds == false) return false;
+		
+		// checks if disabled, if so, enables btn
+		if ($(this).attr('disabled') == 'disabled')
+		{
+			$(this).removeAttr('disabled');
+		}
+		
+		var hadI = $(this).data('i');
+		
+		if (hadI)
+		{
+			var oClass = $(this).data('oClass');
+			
+			// restores original class
+			$(this).find('i').attr('class', oClass);
+		}
+		else
+		{
+			// removes <i> element
+			$(this).find('i').remove();
+			
+			var oVal = $(this).data('oVal');
+
+			// restores original value			
+			$(this).val(oVal);
+		}
+		
+		$(this).removeData(['disableSpin', 'i', 'oClass', 'oVal']);
+		
+		return true;
+	}
 
 	
 	$.fn.location = $.fn.location = function (url)
@@ -501,3 +574,13 @@ console.log($(t).data("selectable"));
 	
 
 })(jQuery);
+
+
+Window.prototype.redirect = function (url)
+{
+	
+	jQuery.fn.location(url);
+	
+	return true;
+
+}
