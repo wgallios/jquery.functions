@@ -80,7 +80,7 @@ Credits:
 		inheritClasses: false,
 		filePostKey: 'file',
 		showProgress: true,
-		successFunction: undefined,
+		successFunction: function(d, fd){},
 		CSRF:{
 			enabled: false,
 			key: '',
@@ -234,6 +234,7 @@ Credits:
 	{
 
 		var this_ = this;
+		var sf = this.options.successFunction;
 		
 		$.ajax({
 			url: this.options.uploadUrl,
@@ -278,7 +279,11 @@ Credits:
 			},
 			success: function(data)
 			{
-			 	if (successFunction !== undefined && typeof successFunction == 'function') successFunction(data, fd); 
+			 
+			},
+			complete: function(data)
+			{;
+				if (sf !== undefined && typeof sf == 'function') sf($.parseJSON(data.responseText), fd); 
 			}
 		});
 	}
