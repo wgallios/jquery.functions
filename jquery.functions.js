@@ -26,8 +26,10 @@ SOFTWARE.
 
 */
 
-var rjs = new Array();
-var rjsLoading = false;
+var rjs = [];
+var rcss = [];
+
+//var rjsLoading = false;
 var noredirect = true;
 
 String.prototype.nl2br = function()
@@ -104,9 +106,32 @@ Window.prototype.norightclick = function ()
 		return cssFiles;
 	}
 
+	$.loadCSSScripts = function (files)
+	{
+		
+		var self = this;
+		
+		$(files).each(function(i, s){
+		
+			if (s == undefined) return false;
+			
+			var ext = getFileExt(s);
+				
+			var loaded = $.checkCSSLoaded(s);
+			
+			// removes element from array if already loaded
+			if (loaded) delete files[i];
+			else
+			{
+				if (ext == 'CSS') $._loadCSS(s);
+				else if (ext == 'LESS') $._loadLess(s);
+				rcss.push(s);
+			}
+		});
+	}
 
 	// loads a CSS file into the <head>
-	$.loadCSS = function (href)
+	$._loadCSS = function (href)
 	{
 		if (href == undefined) throw new Error("CSS href is undefined!");
 		
@@ -119,6 +144,24 @@ Window.prototype.norightclick = function ()
 		script.appendTo("head");
 		
 		return script;
+	}
+	
+	// loads less file into head
+	$._loadLess = function (href)
+	{
+		if (href == undefined) throw new Error("Less href is undefined!");
+		
+		var script = $("<link/>",{
+			rel: "stylesheet/less",
+			href: href
+			});
+
+		script.appendTo("head");
+		
+		less.sheets.push($('link[href="' + href + '"]')[0]);
+		less.refresh();
+		
+		return script;	
 	}
 
 	$.docUrl = function (file, selector, srcTag)
@@ -336,26 +379,37 @@ Window.prototype.norightclick = function ()
 		
 		return src;
 	}
-	
-
-	/*
-	$.queJS = function (files, cb)
-	{
-		var q = $($.requireJS.queue(files, cb);
-		
-		if (rjsLoading) setTimeout(function(){ $.queJS(files, cb) }, 1000);
-		else
-		{
-			$.requireJS(files, cb);
-		}
-	}
-	*/
 
 	
 	$.requireJS = function (files, cb)
 	{
-
+		var jsToLoad = [];
 		
+		var self = this;
+		$(files).each(function(i, s){
+			var loaded = $.checkJSLoaded(s);
+			
+			// removes element from array if already loaded
+			if (loaded) delete files[i];
+			else
+			{
+				jsToLoad.push(s);
+				rjs.push(s);
+			}
+		});
+		
+
+		if (jsToLoad.length > 0 )
+		{
+			require(jsToLoad, function(data){
+				if (cb !== undefined && typeof cb == 'function') cb(data);
+			});
+		}
+		else
+		{
+			if (cb !== undefined && typeof cb == 'function') cb();
+		}
+		/*
 		$.when(
 			$.Deferred(function(){
 			
@@ -378,39 +432,15 @@ Window.prototype.norightclick = function ()
 		.done(function(){
 			var d = new Date();
 			
-			//console.log(d.toUTCString() + " Done");
-			//console.log($.getLoadedJSFiles());
-			
 			if (cb !== undefined && typeof cb == 'function') cb();
 		});
-		
-		
-		/*
-		function rJS (files)
-		{
-			var d = new $.Deferred();
+		*/		
 
-			$(files).each(function(i, s){
-				var loaded = $.checkJSLoaded(s);
-				
-				// removes element from array if already loaded
-				if (loaded) delete files[i];
-				else rjs.push(s);
-			});
-		
-			
-			require(files, function(data){
-				
-			});
-		}
-		*/
 	}
 	
 	$._requireJS = function (files)
 	{
 
-		
-		if (rjsLoading) throw new Error("Currently Loading Scripts");
 		
 		$(files).each(function(i, s){
 			var loaded = $.checkJSLoaded(s);
@@ -450,6 +480,16 @@ Window.prototype.norightclick = function ()
 		var check = jQuery.inArray(src, rjs);
 		
 
+		if (check > -1) return true;
+		else return false;
+	}
+	
+	$.checkCSSLoaded = function (src)
+	{
+		var loaded = false;
+		
+		var check = jQuery.inArray(src, rcss);
+		
 		if (check > -1) return true;
 		else return false;
 	}
@@ -583,4 +623,9 @@ Window.prototype.redirect = function (url)
 	
 	return true;
 
+}
+
+Window.prototype.getFileExt = function (src)
+{
+	return jQuery.fn.getFileExt(src);
 }
