@@ -32,6 +32,9 @@ var rcss = [];
 //var rjsLoading = false;
 var noredirect = true;
 
+var hashStartDelimiter = '!';
+var hashDelimiter = '|';
+
 String.prototype.nl2br = function()
 {
     return this.replace(/\n/g, "<br />");
@@ -597,7 +600,180 @@ Window.prototype.norightclick = function ()
 				
 		$(window).trigger('jquery.redirect', [url]);
 
+		return true;
+	}
 
+	/**
+	* sets a hash variable hashSetVar('x', 123) would be #?x=123
+	*/
+	$.hashSetVar = function (k, v)
+	{
+		var hash = getHash();
+		
+		v = encodeURI(v); // url encodes value
+		
+		var qio = hash.indexOf(hashStartDelimiter);
+			
+		var set = $.hashSet(k);
+		
+		if (set)
+		{
+			$.hashUnsetVar(k);
+			
+			$.hashSetVar(k, v);
+			
+			return true;
+		}
+		
+		if (hash == undefined || hash.length <= 0) window.location.hash = hashStartDelimiter + k + '=' + v;
+		if (qio < 0) window.location.hash = hash  + hashStartDelimiter + k + '=' + v;
+		else window.location.hash = hash + hashDelimiter + k + '=' + v;
+		
+		return true;
+	}
+	
+	/**
+	* privatish function to check if a has var isset
+	*/
+	$.hashSet = function (k)
+	{
+
+		var data = $.getHashVars();
+		var set = false;
+
+		$.each(data, function(key, val){
+			
+			if (key == k)
+			{
+				set = true;
+				return true;
+			}
+		});
+
+		if (set) return true;
+
+		return false;
+	}
+	
+	
+	/**
+	* unsets a hash variable after ?
+	*/
+	$.hashUnsetVar = function (k)
+	{
+		var data = $.getHashVars();
+			
+		var hash = window.location.hash;
+		
+		hash = hash.substring(1);
+				
+		if (hash == undefined || hash.length < 1) return true;
+				
+		var qio = hash.indexOf(hashStartDelimiter);
+		var pre = hash.substring(0, qio); // hash data before variables incase its set
+
+		
+		window.location.hash = pre;
+
+		$.each(data, function(key, val){
+			
+			if (key !== k)
+			{
+				$.hashSetVar(key, val);
+			}
+		});
+		
+		
+		return true;
+	}
+	
+	/**
+	* gets a hash variable value #?x=123 would return Int 123
+	*/
+	$.hashVal = function (k)
+	{
+		var data = $.getHashVars();
+		var v;
+		
+		$.each(data, function(key, val){
+			
+			if (key == k)
+			{
+				v = val;
+				return true;
+			}
+		});
+		
+		v = decodeURI(v); // decodes value
+		
+		return v;
+	}
+	
+	/**
+	* gets all hash variables after ?
+	*/
+	$.getHashVars = function ()
+	{
+		var hash = window.location.hash;
+		
+		if (hash == undefined || hash.length < 1) return false;
+		
+		hash = hash.substring(1);
+		
+		var qio = hash.indexOf(hashStartDelimiter);
+		
+		hash = hash.substring(qio + 1);
+		
+				
+		var vars = hash.split(hashDelimiter);
+		
+		var data = {};
+		
+		for (var i = 0; i < vars.length; i++)
+		{
+			var eio = vars[i].indexOf('=');
+			
+			if (eio > 0)
+			{
+				var key = vars[i].substr(0, eio);
+				var val = vars[i].substring(eio + 1);
+			
+				val = decodeURI(val);
+				
+				if (val == 'null') val = null;
+					
+				if (val == 'false') val = false;
+				if (val == 'true') val = true;
+				
+				if (val == parseInt(val)) val = parseInt(val);
+				if (val == parseFloat(val)) val = parseFloat(val);
+								 
+				data[key] = val;
+			}		
+		}
+		
+		return data;
+	}
+	
+	/**
+	* binds an event function however triggers to catch the event
+	*/
+	$.fn.bindEvent = function (ev, eventFunction)
+	{
+		var t = this;
+	console.log('binding event' + ev);		
+		$(t).trigger('bind.event.prefire', ev);	
+
+		$(t).on(ev, function (event){
+			$(t).trigger('bind.event.prefunction', event);	
+			
+			if (eventFunction !== undefined && typeof eventFunction == 'function') eventFunction(event);
+
+			$(t).trigger('bind.event.postfunction', event);
+		});
+		
+		
+		return true;
 	}
 
 	$(window).on('jquery.redirect', function (e, url)
@@ -616,16 +792,108 @@ Window.prototype.norightclick = function ()
 })(jQuery);
 
 
+/**
+* redirect(url) allows has triggers to dynamically catch redirect
+*/
 Window.prototype.redirect = function (url)
 {
-	
-	jQuery.fn.location(url);
-	
-	return true;
-
-}
+	return jQuery.fn.location(url);
+};
 
 Window.prototype.getFileExt = function (src)
 {
 	return jQuery.fn.getFileExt(src);
-}
+};
+
+Window.prototype.hashSetVar = function (k, v)
+{
+	return jQuery.hashSetVar(k, v);
+};
+
+Window.prototype.hashSet = function (k)
+{
+	return jQuery.hashSet(k);
+};
+
+Window.prototype.hashUnsetVar = function (k)
+{
+	return jQuery.hashUnsetVar(k);
+};
+
+Window.prototype.hashVal = function (k)
+{
+	return jQuery.hashVal(k);
+};
+
+Window.prototype.getHashVars = function ()
+{
+	return jQuery.getHashVars();
+};
+
+Window.prototype.getHash = function ()
+{
+	var h = window.location.hash;
+	
+	if (h == undefined) return undefined;
+	
+	return h.substring(1);
+};
+
+Window.prototype.isJS = function (src)
+{
+	return jQuery.isJS(src);
+};
+
+
+/**
+* gets a URL paramater
+*/
+Window.prototype.GETParam = function (param)
+{
+    var url = window.location.search.substring(1);
+    
+    var urlVars = url.split('&');
+    
+    var val;
+    
+    for (var i = 0; i < urlVars.length; i++) 
+    {
+    	// if isset but no val, will return null not undefined
+    	if (urlVars[i].indexOf('=') < 0)
+    	{
+	    	if (urlVars[i] == param)
+	    	{
+		    	val = null;
+		    	break;
+	    	}
+    	}
+    	else
+    	{
+	    	
+	        var chunks = urlVars[i].split('=');
+	        
+	        if (chunks[0] == param) 
+	        {
+	        	val = chunks[1];
+	        	
+				break;
+			}
+    	}
+    }
+	
+	val = decodeURI(val);
+	
+	//if (val == undefined) val = null;
+	        	
+	if (val == 'false') val = false;
+	if (val == 'true') val = true;
+	if (val == 'undefined') val = undefined;
+
+	if (val == 'null') val = null;
+	
+	if (val == parseInt(val)) val = parseInt(val);
+	if (val == parseFloat(val)) val = parseFloat(val);
+
+	
+    return val;
+};
