@@ -26,9 +26,14 @@ SOFTWARE.
 
 */
 
-var rjs = new Array();
-var rjsLoading = false;
+var rjs = [];
+var rcss = [];
+
+//var rjsLoading = false;
 var noredirect = true;
+
+var hashStartDelimiter = '!';
+var hashDelimiter = '|';
 
 String.prototype.nl2br = function()
 {
@@ -104,9 +109,32 @@ Window.prototype.norightclick = function ()
 		return cssFiles;
 	}
 
+	$.loadCSSScripts = function (files)
+	{
+		
+		var self = this;
+		
+		$(files).each(function(i, s){
+		
+			if (s == undefined) return false;
+			
+			var ext = getFileExt(s);
+				
+			var loaded = $.checkCSSLoaded(s);
+			
+			// removes element from array if already loaded
+			if (loaded) delete files[i];
+			else
+			{
+				if (ext == 'CSS') $._loadCSS(s);
+				else if (ext == 'LESS') $._loadLess(s);
+				rcss.push(s);
+			}
+		});
+	}
 
 	// loads a CSS file into the <head>
-	$.loadCSS = function (href)
+	$._loadCSS = function (href)
 	{
 		if (href == undefined) throw new Error("CSS href is undefined!");
 		
@@ -119,6 +147,24 @@ Window.prototype.norightclick = function ()
 		script.appendTo("head");
 		
 		return script;
+	}
+	
+	// loads less file into head
+	$._loadLess = function (href)
+	{
+		if (href == undefined) throw new Error("Less href is undefined!");
+		
+		var script = $("<link/>",{
+			rel: "stylesheet/less",
+			href: href
+			});
+
+		script.appendTo("head");
+		
+		less.sheets.push($('link[href="' + href + '"]')[0]);
+		less.refresh();
+		
+		return script;	
 	}
 
 	$.docUrl = function (file, selector, srcTag)
@@ -336,26 +382,37 @@ Window.prototype.norightclick = function ()
 		
 		return src;
 	}
-	
-
-	/*
-	$.queJS = function (files, cb)
-	{
-		var q = $($.requireJS.queue(files, cb);
-		
-		if (rjsLoading) setTimeout(function(){ $.queJS(files, cb) }, 1000);
-		else
-		{
-			$.requireJS(files, cb);
-		}
-	}
-	*/
 
 	
 	$.requireJS = function (files, cb)
 	{
-
+		var jsToLoad = [];
 		
+		var self = this;
+		$(files).each(function(i, s){
+			var loaded = $.checkJSLoaded(s);
+			
+			// removes element from array if already loaded
+			if (loaded) delete files[i];
+			else
+			{
+				jsToLoad.push(s);
+				rjs.push(s);
+			}
+		});
+		
+
+		if (jsToLoad.length > 0 )
+		{
+			require(jsToLoad, function(data){
+				if (cb !== undefined && typeof cb == 'function') cb(data);
+			});
+		}
+		else
+		{
+			if (cb !== undefined && typeof cb == 'function') cb();
+		}
+		/*
 		$.when(
 			$.Deferred(function(){
 			
@@ -378,39 +435,15 @@ Window.prototype.norightclick = function ()
 		.done(function(){
 			var d = new Date();
 			
-			//console.log(d.toUTCString() + " Done");
-			//console.log($.getLoadedJSFiles());
-			
 			if (cb !== undefined && typeof cb == 'function') cb();
 		});
-		
-		
-		/*
-		function rJS (files)
-		{
-			var d = new $.Deferred();
+		*/		
 
-			$(files).each(function(i, s){
-				var loaded = $.checkJSLoaded(s);
-				
-				// removes element from array if already loaded
-				if (loaded) delete files[i];
-				else rjs.push(s);
-			});
-		
-			
-			require(files, function(data){
-				
-			});
-		}
-		*/
 	}
 	
 	$._requireJS = function (files)
 	{
 
-		
-		if (rjsLoading) throw new Error("Currently Loading Scripts");
 		
 		$(files).each(function(i, s){
 			var loaded = $.checkJSLoaded(s);
@@ -450,6 +483,16 @@ Window.prototype.norightclick = function ()
 		var check = jQuery.inArray(src, rjs);
 		
 
+		if (check > -1) return true;
+		else return false;
+	}
+	
+	$.checkCSSLoaded = function (src)
+	{
+		var loaded = false;
+		
+		var check = jQuery.inArray(src, rcss);
+		
 		if (check > -1) return true;
 		else return false;
 	}
@@ -557,7 +600,180 @@ Window.prototype.norightclick = function ()
 				
 		$(window).trigger('jquery.redirect', [url]);
 
+		return true;
+	}
 
+	/**
+	* sets a hash variable hashSetVar('x', 123) would be #?x=123
+	*/
+	$.hashSetVar = function (k, v)
+	{
+		var hash = getHash();
+		
+		v = encodeURI(v); // url encodes value
+		
+		var qio = hash.indexOf(hashStartDelimiter);
+			
+		var set = $.hashSet(k);
+		
+		if (set)
+		{
+			$.hashUnsetVar(k);
+			
+			$.hashSetVar(k, v);
+			
+			return true;
+		}
+		
+		if (hash == undefined || hash.length <= 0) window.location.hash = hashStartDelimiter + k + '=' + v;
+		if (qio < 0) window.location.hash = hash  + hashStartDelimiter + k + '=' + v;
+		else window.location.hash = hash + hashDelimiter + k + '=' + v;
+		
+		return true;
+	}
+	
+	/**
+	* privatish function to check if a has var isset
+	*/
+	$.hashSet = function (k)
+	{
+
+		var data = $.getHashVars();
+		var set = false;
+
+		$.each(data, function(key, val){
+			
+			if (key == k)
+			{
+				set = true;
+				return true;
+			}
+		});
+
+		if (set) return true;
+
+		return false;
+	}
+	
+	
+	/**
+	* unsets a hash variable after ?
+	*/
+	$.hashUnsetVar = function (k)
+	{
+		var data = $.getHashVars();
+			
+		var hash = window.location.hash;
+		
+		hash = hash.substring(1);
+				
+		if (hash == undefined || hash.length < 1) return true;
+				
+		var qio = hash.indexOf(hashStartDelimiter);
+		var pre = hash.substring(0, qio); // hash data before variables incase its set
+
+		
+		window.location.hash = pre;
+
+		$.each(data, function(key, val){
+			
+			if (key !== k)
+			{
+				$.hashSetVar(key, val);
+			}
+		});
+		
+		
+		return true;
+	}
+	
+	/**
+	* gets a hash variable value #?x=123 would return Int 123
+	*/
+	$.hashVal = function (k)
+	{
+		var data = $.getHashVars();
+		var v;
+		
+		$.each(data, function(key, val){
+			
+			if (key == k)
+			{
+				v = val;
+				return true;
+			}
+		});
+		
+		v = decodeURI(v); // decodes value
+		
+		return v;
+	}
+	
+	/**
+	* gets all hash variables after ?
+	*/
+	$.getHashVars = function ()
+	{
+		var hash = window.location.hash;
+		
+		if (hash == undefined || hash.length < 1) return false;
+		
+		hash = hash.substring(1);
+		
+		var qio = hash.indexOf(hashStartDelimiter);
+		
+		hash = hash.substring(qio + 1);
+		
+				
+		var vars = hash.split(hashDelimiter);
+		
+		var data = {};
+		
+		for (var i = 0; i < vars.length; i++)
+		{
+			var eio = vars[i].indexOf('=');
+			
+			if (eio > 0)
+			{
+				var key = vars[i].substr(0, eio);
+				var val = vars[i].substring(eio + 1);
+			
+				val = decodeURI(val);
+				
+				if (val == 'null') val = null;
+					
+				if (val == 'false') val = false;
+				if (val == 'true') val = true;
+				
+				if (val == parseInt(val)) val = parseInt(val);
+				if (val == parseFloat(val)) val = parseFloat(val);
+								 
+				data[key] = val;
+			}		
+		}
+		
+		return data;
+	}
+	
+	/**
+	* binds an event function however triggers to catch the event
+	*/
+	$.fn.bindEvent = function (ev, eventFunction)
+	{
+		var t = this;
+	console.log('binding event' + ev);		
+		$(t).trigger('bind.event.prefire', ev);	
+
+		$(t).on(ev, function (event){
+			$(t).trigger('bind.event.prefunction', event);	
+			
+			if (eventFunction !== undefined && typeof eventFunction == 'function') eventFunction(event);
+
+			$(t).trigger('bind.event.postfunction', event);
+		});
+		
+		
+		return true;
 	}
 
 	$(window).on('jquery.redirect', function (e, url)
@@ -576,11 +792,108 @@ Window.prototype.norightclick = function ()
 })(jQuery);
 
 
+/**
+* redirect(url) allows has triggers to dynamically catch redirect
+*/
 Window.prototype.redirect = function (url)
 {
-	
-	jQuery.fn.location(url);
-	
-	return true;
+	return jQuery.fn.location(url);
+};
 
-}
+Window.prototype.getFileExt = function (src)
+{
+	return jQuery.fn.getFileExt(src);
+};
+
+Window.prototype.hashSetVar = function (k, v)
+{
+	return jQuery.hashSetVar(k, v);
+};
+
+Window.prototype.hashSet = function (k)
+{
+	return jQuery.hashSet(k);
+};
+
+Window.prototype.hashUnsetVar = function (k)
+{
+	return jQuery.hashUnsetVar(k);
+};
+
+Window.prototype.hashVal = function (k)
+{
+	return jQuery.hashVal(k);
+};
+
+Window.prototype.getHashVars = function ()
+{
+	return jQuery.getHashVars();
+};
+
+Window.prototype.getHash = function ()
+{
+	var h = window.location.hash;
+	
+	if (h == undefined) return undefined;
+	
+	return h.substring(1);
+};
+
+Window.prototype.isJS = function (src)
+{
+	return jQuery.isJS(src);
+};
+
+
+/**
+* gets a URL paramater
+*/
+Window.prototype.GETParam = function (param)
+{
+    var url = window.location.search.substring(1);
+    
+    var urlVars = url.split('&');
+    
+    var val;
+    
+    for (var i = 0; i < urlVars.length; i++) 
+    {
+    	// if isset but no val, will return null not undefined
+    	if (urlVars[i].indexOf('=') < 0)
+    	{
+	    	if (urlVars[i] == param)
+	    	{
+		    	val = null;
+		    	break;
+	    	}
+    	}
+    	else
+    	{
+	    	
+	        var chunks = urlVars[i].split('=');
+	        
+	        if (chunks[0] == param) 
+	        {
+	        	val = chunks[1];
+	        	
+				break;
+			}
+    	}
+    }
+	
+	val = decodeURI(val);
+	
+	//if (val == undefined) val = null;
+	        	
+	if (val == 'false') val = false;
+	if (val == 'true') val = true;
+	if (val == 'undefined') val = undefined;
+
+	if (val == 'null') val = null;
+	
+	if (val == parseInt(val)) val = parseInt(val);
+	if (val == parseFloat(val)) val = parseFloat(val);
+
+	
+    return val;
+};
