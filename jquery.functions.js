@@ -755,13 +755,72 @@ Window.prototype.norightclick = function ()
 		return data;
 	}
 	
+	
+	/**
+	* goes through a div and checks all required fields
+	*/
+	$.fn.validateForm = function ()
+	{
+		var valid = true;
+		
+		var t = this;
+		
+		$(t).clearInputWarnings();
+		
+		$(t).find("[required='']").each(function(index, el){
+			var $el = $(el);
+			var msg = $el.data('msg');
+			
+			if ($el.prop('tagName') == 'INPUT')
+			{
+				if ($el.attr('type').toUpperCase() == 'TEXT' || $el.attr('type').toUpperCase() == 'PASSWORD')
+				{
+					if ($el.val() == '')
+					{
+						valid = false;
+						
+						if (msg !== undefined) Warning(msg);
+						
+						$el.focus();
+						$el.inputWarn();
+						
+						return false;	
+					}
+				}
+			}
+		});
+		
+		
+		return valid;
+	}
+	
+	$.fn.clearInputWarnings = function ()
+	{
+		$(this).find('.form-group').removeClass('has-warning');
+		
+		return true;
+	}
+	
+	$.fn.inputWarn = function ()
+	{
+		var t = this;
+		
+		var formGroup = $(this).parent().parent('.form-group');
+		
+		if (formGroup == undefined) return false;
+		
+		$(formGroup).addClass('has-warning');
+		
+		return true;
+	}
+	
 	/**
 	* binds an event function however triggers to catch the event
 	*/
 	$.fn.bindEvent = function (ev, eventFunction)
 	{
 		var t = this;
-	console.log('binding event' + ev);		
+
 		$(t).trigger('bind.event.prefire', ev);	
 
 		$(t).on(ev, function (event){
