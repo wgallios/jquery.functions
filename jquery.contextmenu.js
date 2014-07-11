@@ -59,8 +59,6 @@
 		
 		this.index = this.$el.index();
 		
-
-		
 		this.containers = [];
 		
 		this.mx = -1;
