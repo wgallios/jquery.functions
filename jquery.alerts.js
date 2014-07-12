@@ -53,9 +53,9 @@
 
 		if (this.options.display)
 		{
-			this.init(msg, header);
-		
-			return this;
+			var $alert = this.init(msg, header);
+
+			return $alert;
 		}
 		else
 		{
@@ -68,13 +68,14 @@
 	fn.init = function (msg, header)
 	{
 		var t = this;
+		var $alert;
 		
 		t.checkFontAwesome();
 		t.buildContainer(function($container){
-			t.buildAlert($container, msg, header);
+			$alert = t.buildAlert($container, msg, header);			
 		});
-		
 
+		return $alert;
 	}
 	
 	fn.buildContainer = function (sf)
@@ -212,7 +213,13 @@
 	{
 		var duration = this.options.animation.duration;
 		
-		if (this.velocity)
+		if (duration == undefined) duration = 400;
+		
+		var vel = this.velocity;
+		
+		if (vel == undefined) vel = (jQuery().velocity) ? true : false;
+		
+		if (vel)
 		{
 			$alert.velocity({ opacity:0 }, {
 				duration: duration,
@@ -229,6 +236,7 @@
 			})
 		}
 		
+		return true;
 	}
 	
 
@@ -279,4 +287,9 @@ Window.prototype.Info = function (msg, header, options)
 	if (options == undefined) options = {};
 	
 	return jQuery.alerts.constructor($('body'), msg, header, $.extend(true, {}, options, { type: 'info' }));
+}
+
+Window.prototype.clearAlert = function ($alert)
+{
+	return jQuery.alerts.clearAlert($alert);
 }

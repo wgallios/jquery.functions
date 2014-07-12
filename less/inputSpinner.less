@@ -1,0 +1,85 @@
+
+
+.inputSpinnerContainer
+{
+	border:@borderThickness solid @borderColor;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+	transition:border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+	border-radius: @borderRadius;
+	
+	display: table;
+					
+	.font;
+		
+		
+	.inputSpinnerPrefix
+	{
+		padding:0px 3px;
+		background: @hoverBG;
+		display: table-cell;
+		text-align: center;
+		vertical-align: middle;
+		border-top-left-radius: @borderRadius;
+		border-bottom-left-radius: @borderRadius;
+		
+		.font;
+		
+		border-right:@borderThickness solid @borderColor;
+	}
+	
+	.inputSpinner
+	{
+
+		border-radius: @borderRadius;
+		color:@color;
+		border:none;
+		background: white;
+		
+		position: relative;
+		float:left;
+		width:100%;
+		display: table-cell;
+		padding:6px 12px;
+		
+	}
+	
+	.inputSpinnerBtnContainer
+	{
+
+
+		height: 100%;
+
+		border-left:@borderThickness solid @borderColor;
+		display: table-cell;		
+
+		button
+		{
+			background: white;
+			border:none;
+		};
+
+		.inputSpinnerUpBtn:hover, .inputSpinnerDnBtn:hover
+		{
+			background:@hoverBG;
+		}
+		
+		.inputSpinnerUpBtn, .inputSpinnerDnBtn
+		{
+			color:@color;
+			font-size:0.8em;
+			font-weight: bold;
+			display: block;
+			height: 16px;
+			background: none;
+			padding:0;
+			margin:0;
+			width:100%;
+			float:none;
+		}
+		
+		.inputSpinnerDnBtn
+		{
+			border-top:1px solid @borderColor;
+		}
+	}
+}

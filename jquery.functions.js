@@ -35,6 +35,8 @@ var noredirect = true;
 var hashStartDelimiter = '!';
 var hashDelimiter = '|';
 
+var velocity = (jQuery().velocity) ? true : false;
+
 String.prototype.nl2br = function()
 {
     return this.replace(/\n/g, "<br />");
@@ -755,13 +757,72 @@ Window.prototype.norightclick = function ()
 		return data;
 	}
 	
+	
+	/**
+	* goes through a div and checks all required fields
+	*/
+	$.fn.validateForm = function ()
+	{
+		var valid = true;
+		
+		var t = this;
+		
+		$(t).clearInputWarnings();
+		
+		$(t).find("[required='']").each(function(index, el){
+			var $el = $(el);
+			var msg = $el.data('msg');
+			
+			if ($el.prop('tagName') == 'INPUT')
+			{
+				if ($el.attr('type').toUpperCase() == 'TEXT' || $el.attr('type').toUpperCase() == 'PASSWORD')
+				{
+					if ($el.val() == '')
+					{
+						valid = false;
+						
+						if (msg !== undefined) Warning(msg);
+						
+						$el.focus();
+						$el.inputWarn();
+						
+						return false;	
+					}
+				}
+			}
+		});
+		
+		
+		return valid;
+	}
+	
+	$.fn.clearInputWarnings = function ()
+	{
+		$(this).find('.form-group').removeClass('has-warning');
+		
+		return true;
+	}
+	
+	$.fn.inputWarn = function ()
+	{
+		var t = this;
+		
+		var formGroup = $(this).parent().parent('.form-group');
+		
+		if (formGroup == undefined) return false;
+		
+		$(formGroup).addClass('has-warning');
+		
+		return true;
+	}
+	
 	/**
 	* binds an event function however triggers to catch the event
 	*/
 	$.fn.bindEvent = function (ev, eventFunction)
 	{
 		var t = this;
-	console.log('binding event' + ev);		
+
 		$(t).trigger('bind.event.prefire', ev);	
 
 		$(t).on(ev, function (event){
@@ -774,6 +835,168 @@ Window.prototype.norightclick = function ()
 		
 		
 		return true;
+	}
+	
+	/**
+	* dot dot dot. ands dots to an element on a set interval
+	* Exampe:
+	*	Loading .
+	*	Loading ..
+	*	Loading ...
+	*/
+	$.fn.ddd = function (options)
+	{
+		var t = this;
+		
+		if (options == undefined) options = {};
+	
+		var defaults = 
+		{
+			duration: 200,
+			speed: 400,
+			dots:5
+		}
+		
+				
+		options = $.extend(true, {}, defaults, options);
+		
+		var $span = $("<span>", { id:'ddd', style:"display:none; opacity:0;" });
+		
+		if (velocity) $span.velocity('fadeIn', { duration:options.duration });
+		else $span.fadeIn(options.duration);
+		
+		$(t).append($span);
+		
+		var dInterval = setInterval(function(){
+			var txt = $span.text();
+			
+			if (txt.length >= options.dots) $span.text('');
+			else $span.text(txt + '.');
+			
+		}, options.speed);
+		
+		
+		$.fn.ddd.clear = function ()
+		{
+			clearInterval(dInterval);
+			
+			if (velocity) 
+			{	
+				$span.velocity('fadeIn', { 
+					duration: options.duraiton, 
+					complete: function ()
+					{
+						$span.remove();
+					}	
+				});
+			}
+			else
+			{
+				$span.fadeIn(options.duration, function(){
+					$span.remove();
+				});
+			}
+		}
+	}
+
+	$.fn.disable = function ()
+	{
+		$(this)._toggleElements(true);
+	}
+	
+	$.fn.enable = function ()
+	{
+		$(this)._toggleElements(false);		
+	}
+	
+	$.fn._toggleElements = function (disabled)
+	{
+		if (disabled == undefined) return false;
+
+		$(this).find('button, input, select, a').each(function(index, el){
+			var $el = $(el);
+			
+			if ($el.prop('tagName') == 'A')
+			{
+				var url = $el.attr('href');
+				
+				if (disabled)
+				{
+					$el.addClass('disabled');
+					$el.off('click');
+					
+					$el.data('clickFunction', $el.click);
+					
+					if ($el.attr('onclick') !== undefined)
+					{
+						$el.data('onclickFunction', $el.attr('onclick'));
+						$el.removeAttr('onclick');
+					}
+									
+					$el.bind('click', false);
+					
+
+
+				}
+				else
+				{
+					
+
+					$el.unbind('click', false);
+
+					
+					
+					var ocf = $el.data('onclickFunction');
+					
+					
+					if (ocf !== undefined) $el.attr('onclick', ocf);
+
+					$el.removeClass('disabled');
+
+				}
+			}
+			else
+			{
+				if (disabled) $el.attr('disabled', 'disabled');
+				else $el.removeAttr('disabled');
+			}
+			
+
+			
+		});
+		
+		return true;
+		
+	}
+	
+	$.addParam = function (data, key, val)
+	{
+		if (data == undefined) data = '';
+		
+		if (typeof data == 'string')
+		{
+			var encodeData = encodeURI(key) + '=' + encodeURI(val);
+			
+			if (data.length > 0) data += '&' + encodeData;
+			else data = encodeData;
+		}
+		
+		if (typeof data == 'object' && data instanceof Array)
+		{
+			data.push(val);
+		}
+		
+		if (typeof data == 'object')
+		{
+			data[key] = val;
+		}
+		
+		return data;
+	}
+
+	$.fn.ajaxLoader = function ()
+	{
+		
 	}
 
 	$(window).on('jquery.redirect', function (e, url)
