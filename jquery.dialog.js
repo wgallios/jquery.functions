@@ -31,7 +31,6 @@
 	
 	function Dialog (el, msg, options)
 	{
-		global.log("New Dialog: " + msg);
 		this.options = $.extend(true, {}, defaults, options);
 		this.$el = $(el);
 

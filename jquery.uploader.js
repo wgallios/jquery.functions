@@ -77,8 +77,12 @@ Credits:
 		debug: false,
 		uploadUrl: '',
 		containerClass: 'uploader-dropzone',
+		btnIcon: 'fa fa-search', // Font awesome icon
+		btnTxt: 'Browse...',
 		inheritClasses: false,
 		filePostKey: 'file',
+		dropIcon: 'fa fa-cloud-download', // font awesome icon
+		dropTxt: "Click upload, or drop files here.",
 		showProgress: true,
 		successFunction: function(d, fd){},
 		CSRF:{
@@ -135,15 +139,26 @@ Credits:
 		var options = this.options;
 		var $el = $(this.el);
 		
-		var uploadBtn = $.parseHTML("<button type='button' class='upload-btn' id='upload-btn'>Upload</button>");
+		var uploadBtn = $.parseHTML("<button type='button' class='upload-btn' id='upload-btn'>" + options.btnTxt + "</button>");
+	
+		if (options.btnIcon !== undefined && options.btnIcon.length > 0)
+		{
+			$(uploadBtn).prepend("<label class='" + options.btnIcon + "'></label> ");
+		}
 	
 		$(uploadBtn).click(function(e){
 			$el.click();
 		});
 		
 		var html = $.parseHTML("<div class='" + options.containerClass + "'>"+
-		"<span>Click upload, or drop files here.</span>" +
+		"<span>" + options.dropTxt + "</span>" +
 		"</div> <!-- /." + this.options.containerClass + " -->");
+		
+		
+		if (options.dropIcon !== undefined && options.dropIcon.length > 0)
+		{
+			$(html).prepend("<label class='" + options.dropIcon + "'></label> ");
+		}
 		
 		$(html).prepend(uploadBtn);
 		

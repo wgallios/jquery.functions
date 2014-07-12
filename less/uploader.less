@@ -7,6 +7,11 @@
 	display: block;
 }
 
+.uploader-dropzone:before
+{
+	border:@borderThickness groove @borderColor;
+}
+
 .uploader-dropzone
 {
 	
@@ -14,11 +19,18 @@
 	display:block;
 	width:100%;
 
+	border-radius: @borderRadius;
+
 	padding:20px;
-	border:2px solid @borderColor;
-		
-		
+	border:@borderThickness dashed @borderColor;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+	transition:border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
 	.font;
+	
+	.fa
+	{
+		opacity:0.8;
+	}
 	
 	span
 	{
@@ -30,10 +42,18 @@
 		.font;
 		
 		margin-right: 15px;
-		background: none;
-		border:@borderThickness solid #c9c6ff;
+		background: white;
+		border-radius: @borderRadius;
+		border:@borderThickness solid @borderColor;
 		padding:6px 12px;
+		text-transform: capitalize;
+
 	}
+}
+
+.upload-dropzone:focus
+{
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(102, 175, 233, 0.6);
 }
 
 .dropzone-highlight
@@ -117,7 +137,7 @@
 	
 		.uploader-progress-bar
 		{
-			background: @borderColor;
+			background: @progressBar;
 			height: 10px;
 			border-radius: 4px;
 			display: block;
