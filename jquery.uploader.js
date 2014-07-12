@@ -82,8 +82,9 @@ Credits:
 		inheritClasses: false,
 		filePostKey: 'file',
 		dropIcon: 'fa fa-cloud-download', // font awesome icon
-		dropTxt: "Click upload, or drop files here.",
+		dropTxt: "Click browse, or drop files here.",
 		showProgress: true,
+		extraParams: {},
 		successFunction: function(d, fd){},
 		CSRF:{
 			enabled: false,
@@ -210,8 +211,9 @@ Credits:
 	
 	fn.processUpload = function (files)
 	{
+		var params = this.options.extraParams;
 		var csrf = this.options.CSRF;
-
+		
 		for (var i = 0; i < files.length; i++)
 		{
 			var fd = new FormData();
@@ -221,6 +223,18 @@ Credits:
 			if (csrf.enabled)
 			{
 				fd.append(csrf.key, csrf.val);
+			}
+			
+			// adds additional params if necessary
+			if (Object.keys(params).length > 0)
+			{
+				for (var k in params)
+				{
+					if (params.hasOwnProperty(k))
+					{
+						fd.append(k, params[k]);
+					}
+				}
 			}
 					
 			//var progressbar = user.setProgressBar();
@@ -305,8 +319,9 @@ Credits:
 	
 	fn.basicFileUpload = function (file)
 	{
+		var params = this.options.extraParams;
 		var csrf = this.options.CSRF;
-				
+		
 		var fd = new FormData();
 
 		fd.append(this.options.filePostKey, file);
@@ -314,6 +329,18 @@ Credits:
 		if (csrf.enabled)
 		{
 			fd.append(csrf.key, csrf.val);
+		}
+		
+		// adds additional params if necessary
+		if (Object.keys(params).length > 0)
+		{
+			for (var k in params)
+			{
+				if (params.hasOwnProperty(k))
+				{
+					fd.append(k, params[k]);
+				}
+			}
 		}
 		
 		var pb = this.createProgressBar();
