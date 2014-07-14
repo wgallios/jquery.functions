@@ -5,7 +5,7 @@
 		debug: false,
 		type: 'warning', // warning, success, danger, info
 		opacity:0.9,
-		borderRadius:10,
+		borderRadius:4,
 		clearTimeoutSeconds:3, // 0 for no timeout
 		animation:
 		{

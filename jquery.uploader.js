@@ -296,7 +296,6 @@ Credits:
 						$(this_).trigger('upload.complete', fd);
 						
 						this_.removeProgressBar(pb);
-						//user.hideProgressbar(progressbar);
 					}
 	
 		        }
@@ -311,7 +310,7 @@ Credits:
 			 
 			},
 			complete: function(data)
-			{;
+			{
 				if (sf !== undefined && typeof sf == 'function') sf($.parseJSON(data.responseText), fd); 
 			}
 		});

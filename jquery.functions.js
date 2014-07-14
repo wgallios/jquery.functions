@@ -657,7 +657,7 @@ Window.prototype.norightclick = function ()
 		return false;
 	}
 	
-	
+
 	/**
 	* unsets a hash variable after ?
 	*/
@@ -742,14 +742,8 @@ Window.prototype.norightclick = function ()
 			
 				val = decodeURI(val);
 				
-				if (val == 'null') val = null;
-					
-				if (val == 'false') val = false;
-				if (val == 'true') val = true;
+				val = parse(val);
 				
-				if (val == parseInt(val)) val = parseInt(val);
-				if (val == parseFloat(val)) val = parseFloat(val);
-								 
 				data[key] = val;
 			}		
 		}
@@ -757,6 +751,93 @@ Window.prototype.norightclick = function ()
 		return data;
 	}
 	
+	/**
+	* gets the inverted color of the input color
+	*/
+	$.inverseColor = function (c)
+	{
+	    var color = c;
+	    
+	    color = color.substring(1);
+	    color = parseInt(color, 16);
+	    color = 0xFFFFFF ^ color;
+	    color = color.toString(16);
+	    color = ("000000" + color).slice(-6);
+	    color = "#" + color;
+	    
+	    return color;
+	}
+
+	/**
+	* affix item to page when scrolling past it
+	*/
+	$.fn.affixTop = function (top, options)
+	{
+		if (top == undefined) top = 0;
+		
+		var t = this;
+
+		if (options == undefined) options = {};
+	
+		var defaults = 
+		{
+			marginTop: 0,
+			marginLeft: 0,
+			marginBottom: 0,
+			marginRight: 0
+		}
+		
+				
+		options = $.extend(true, {}, defaults, options);
+		
+
+		var oT = $(t).offset().top;
+			
+		var orgPos = $(t).css('position');
+		var orgTop = $(t).css('top');
+
+		var mt = $(t).css('margin-top');
+		var ml = $(t).css('margin-left');
+		var mb = $(t).css('margin-bottom');		
+		var mr = $(t).css('margin-right');
+		
+		// starts tracking scroll
+		
+		$(window).scroll(function(){
+			// gets elements offset from top			
+			
+			var st = $(this).scrollTop();
+						
+			if ((st + top) >= oT)
+			{
+				if (!$(t).hasClass('affix'))
+				{	
+					$(t).addClass('affix')
+						.css('position', 'fixed')
+						.css('margin-top', options.marginTop)
+						.css('margin-left', options.marginLeft)
+						.css('margin-bottom', options.marginBottom)
+						.css('margin-right', options.marginRight)
+						.css('top', top);
+				}
+			}
+			else
+			{
+				if ($(t).hasClass('affix'))
+				{
+					$(t).removeClass('affix')
+						.css('position', orgPos)
+						.css('margin-top', mt)
+						.css('margin-left', ml)
+						.css('margin-bottom', mb)
+						.css('margin-right', mr)
+						.css('top', '');
+				}
+			}
+		});
+		
+		return true;
+	}
 	
 	/**
 	* goes through a div and checks all required fields
@@ -1068,6 +1149,22 @@ Window.prototype.isJS = function (src)
 };
 
 
+Window.prototype.parse = function (val)
+{
+	if (val == undefined) return undefined;
+	
+	if (val == 'false') val = false;
+	if (val == 'true') val = true;
+	if (val == 'undefined') val = undefined;
+
+	if (val == 'null') val = null;
+	
+	if (val == parseInt(val)) val = parseInt(val);
+	if (val == parseFloat(val)) val = parseFloat(val);
+	
+	return val;
+}
+
 /**
 * gets a URL paramater
 */
@@ -1106,17 +1203,12 @@ Window.prototype.GETParam = function (param)
 	
 	val = decodeURI(val);
 	
-	//if (val == undefined) val = null;
-	        	
-	if (val == 'false') val = false;
-	if (val == 'true') val = true;
-	if (val == 'undefined') val = undefined;
-
-	if (val == 'null') val = null;
-	
-	if (val == parseInt(val)) val = parseInt(val);
-	if (val == parseFloat(val)) val = parseFloat(val);
-
+	val = parse(val);
 	
     return val;
 };
+
+Window.prototype.inverseColor = function (color)
+{
+	return jQuery.inverseColor(color);
+}
