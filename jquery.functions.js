@@ -86,7 +86,7 @@ Window.prototype.norightclick = function ()
 
 	
 	
-	// returns an array of all css files in HEAD
+	// returns an object array of all css files in HEAD
 	$.getLoadedCSS = function ()
 	{
 		var cssFiles = [];
@@ -94,16 +94,11 @@ Window.prototype.norightclick = function ()
 		$('link').each(function(index, s){
 			var src = $(s).attr('href');
 			
-			
-			if (src == undefined)
-			{
-				// no css file
-			}
-			else
+			if (src !== undefined)
 			{
 				if (src.toLowerCase().indexOf('.css'))
 				{
-					cssFiles.push(src);
+					cssFiles.push(this);
 				}
 			}
 		});
@@ -128,16 +123,44 @@ Window.prototype.norightclick = function ()
 			if (loaded) delete files[i];
 			else
 			{
-				if (ext == 'CSS') $._loadCSS(s);
-				else if (ext == 'LESS') $._loadLess(s);
+				if (ext == 'CSS') $.loadCSS(s);
+				else if (ext == 'LESS') $.loadLess(s);
 				rcss.push(s);
 			}
 		});
 	}
 
-	// loads a CSS file into the <head>
-	$._loadCSS = function (href)
+	// unloads a CSS Script
+	$.unloadCSS = function (href)
 	{
+		if (href == undefined) throw new Error("CSS href is undefined!");
+		
+		var scripts = $.getLoadedCSS();
+		
+		var removed = false;
+		
+		for (var i = 0; i < scripts.length; i++)
+		{
+			if ($(scripts[i]).attr('href').indexOf(href) > 0)
+			{
+				$(scripts[i]).remove();
+				removed = true;
+				break;
+			}
+		}
+		
+		if (removed) return true;
+		
+		return false;
+	}
+
+	// loads a CSS file into the <head>
+	$.loadCSS = function (href, min)
+	{
+		if (min == undefined) min = false;
+		
+		if (min) href = $.min(href);
+	
 		if (href == undefined) throw new Error("CSS href is undefined!");
 		
 		var script = $("<link/>",{
@@ -152,7 +175,7 @@ Window.prototype.norightclick = function ()
 	}
 	
 	// loads less file into head
-	$._loadLess = function (href)
+	$.loadLess = function (href)
 	{
 		if (href == undefined) throw new Error("Less href is undefined!");
 		
@@ -184,11 +207,11 @@ Window.prototype.norightclick = function ()
 				var src = $s.attr(srcTag);
 				
 				if (src == undefined) return false;
-				console.log("SRC: " + src);
+
 	            if (src.indexOf(file) >= 0 )
 	            {
 	                docurl = src.substring(0, src.indexOf(file));
-	                console.log("MATCH: " + docurl);
+
 	                return true;
 	            }
 	            
@@ -285,32 +308,37 @@ Window.prototype.norightclick = function ()
 	
 	$.fn.loadJSSrcs.unload = function ()
 	{	
-		$.log('unloading');
+		clog('unloading');
 		
 		// delete object.name
 	}
 	
 	// function used for logging
-	$.log = $.fn.log = function (msg, stringify)
+	$.log = $.fn.log = function (msg, stringify, type, stackTrace)
 	{
+		if (type == undefined) type = 'log';
 		if (stringify == undefined) stringify = false;
+		if (stackTrace == undefined) stackTrace = false;
 		
 		if (console)
 		{
 			if (stringify) msg = JSON.stingify(msg);
 			
-			console.error(msg);
-
+			if (type == 'warn') console.warn(msg);
+			if (type == 'error') console.error(msg);
+			else console.log(msg);
+			
 			if (typeof this == 'object')
 			{
 				console.dir(this);
-				//window.console && console.dir(this);				
 			}
-			
-
-			
-			window.console && console.log((new Error()).stack);
+						
+			if (stackTrace) window.console && console.log((new Error()).stack);
+		
+			return true;
 		}
+		
+		return false;
 	}
 	
 	// redraws element to freshs its layout
@@ -1211,4 +1239,19 @@ Window.prototype.GETParam = function (param)
 Window.prototype.inverseColor = function (color)
 {
 	return jQuery.inverseColor(color);
+}
+
+Window.prototype.clog = function (msg, stringify, stackTrace)
+{
+	return jQuery.log(msg, stringify, 'log', stackTrace);
+}
+
+Window.prototype.cwarn = function (msg, stringify, stackTrace)
+{
+	return jQuery.log(msg, stringify, 'warn', stackTrace);
+}
+
+Window.prototype.cerror = function (msg, stringify, stackTrace)
+{
+	return jQuery.log(msg, stringify, 'error', stackTrace);
 }
