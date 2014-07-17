@@ -1,0 +1,3 @@
+[submodule "jquery-number.js"]
+	path = jquery-number.js
+	url = git@github.com:wgallios/jquery-number.git
