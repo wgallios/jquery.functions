@@ -35,20 +35,12 @@ var noredirect = true;
 var hashStartDelimiter = '!';
 var hashDelimiter = '|';
 
-var velocity = (jQuery().velocity) ? true : false;
 
-String.prototype.nl2br = function()
-{
-    return this.replace(/\n/g, "<br />");
-}
+// object that checks for plugins
+var plugins = {};
 
-
-// no right click context menu; usage: norightclick(); - easy peasy
-
-Window.prototype.norightclick = function ()
-{
-	$(document).bind("contextmenu",function(e){ return false; });
-}
+plugins.number = (jQuery().number) ? true : false;
+plugins.velocity = (jQuery().velocity) ? true : false;
 
 ;(function($){
 	'use strict';
@@ -155,9 +147,10 @@ Window.prototype.norightclick = function ()
 	}
 
 	// loads a CSS file into the <head>
-	$.loadCSS = function (href, min)
+	$.loadCSS = function (href, min, cache)
 	{
 		if (min == undefined) min = false;
+		if (cache == undefined) cache = true;
 		
 		if (min) href = $.min(href);
 	
@@ -817,7 +810,8 @@ Window.prototype.norightclick = function ()
 		
 				
 		options = $.extend(true, {}, defaults, options);
-		
+	
+		var w = $(t).outerWidth();	
 
 		var oT = $(t).offset().top;
 			
@@ -841,6 +835,7 @@ Window.prototype.norightclick = function ()
 				if (!$(t).hasClass('affix'))
 				{	
 					$(t).addClass('affix')
+						.css('width', w)
 						.css('position', 'fixed')
 						.css('margin-top', options.marginTop)
 						.css('margin-left', options.marginLeft)
@@ -854,6 +849,7 @@ Window.prototype.norightclick = function ()
 				if ($(t).hasClass('affix'))
 				{
 					$(t).removeClass('affix')
+						.css('width', '')
 						.css('position', orgPos)
 						.css('margin-top', mt)
 						.css('margin-left', ml)
@@ -1108,6 +1104,21 @@ Window.prototype.norightclick = function ()
 		
 	}
 
+	$.randomString = function (length, chars)
+	{
+		if (length == undefined) length = 16;
+		if (chars == undefined) chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		
+		var result = '';
+		
+		for (var i = length; i > 0; --i)
+		{
+			result += chars[Math.round(Math.random() * (chars.length - 1))];
+		}
+		
+		return result;
+	}
+
 	$(window).on('jquery.redirect', function (e, url)
 	{
 		$(window).trigger('preprocess.redirect', [url]);
@@ -1254,4 +1265,17 @@ Window.prototype.cwarn = function (msg, stringify, stackTrace)
 Window.prototype.cerror = function (msg, stringify, stackTrace)
 {
 	return jQuery.log(msg, stringify, 'error', stackTrace);
+}
+
+String.prototype.nl2br = function()
+{
+    return this.replace(/\n/g, "<br />");
+}
+
+
+// no right click context menu; usage: norightclick(); - easy peasy
+
+Window.prototype.norightclick = function ()
+{
+	$(document).bind("contextmenu",function(e){ return false; });
 }
