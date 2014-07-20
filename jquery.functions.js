@@ -988,7 +988,7 @@ plugins.velocity = (jQuery().velocity) ? true : false;
 			if (velocity) 
 			{	
 				$span.velocity('fadeIn', { 
-					duration: options.duraiton, 
+					duration: 400, 
 					complete: function ()
 					{
 						$span.remove();
