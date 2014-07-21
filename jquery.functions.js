@@ -35,23 +35,14 @@ var noredirect = true;
 var hashStartDelimiter = '!';
 var hashDelimiter = '|';
 
-var velocity = (jQuery().velocity) ? true : false;
 
-String.prototype.nl2br = function()
-{
-    return this.replace(/\n/g, "<br />");
-}
-
-
-// no right click context menu; usage: norightclick(); - easy peasy
-
-Window.prototype.norightclick = function ()
-{
-	$(document).bind("contextmenu",function(e){ return false; });
-}
+// object that checks for plugins
+var plugins = {};
 
 ;(function($){
 	'use strict';
+
+	checkPlugins();
 	
 	// jquery function to check if element exists;
 	$.fn.exists = function ()
@@ -86,7 +77,7 @@ Window.prototype.norightclick = function ()
 
 	
 	
-	// returns an array of all css files in HEAD
+	// returns an object array of all css files in HEAD
 	$.getLoadedCSS = function ()
 	{
 		var cssFiles = [];
@@ -94,16 +85,11 @@ Window.prototype.norightclick = function ()
 		$('link').each(function(index, s){
 			var src = $(s).attr('href');
 			
-			
-			if (src == undefined)
-			{
-				// no css file
-			}
-			else
+			if (src !== undefined)
 			{
 				if (src.toLowerCase().indexOf('.css'))
 				{
-					cssFiles.push(src);
+					cssFiles.push(this);
 				}
 			}
 		});
@@ -128,16 +114,45 @@ Window.prototype.norightclick = function ()
 			if (loaded) delete files[i];
 			else
 			{
-				if (ext == 'CSS') $._loadCSS(s);
-				else if (ext == 'LESS') $._loadLess(s);
+				if (ext == 'CSS') $.loadCSS(s);
+				else if (ext == 'LESS') $.loadLess(s);
 				rcss.push(s);
 			}
 		});
 	}
 
-	// loads a CSS file into the <head>
-	$._loadCSS = function (href)
+	// unloads a CSS Script
+	$.unloadCSS = function (href)
 	{
+		if (href == undefined) throw new Error("CSS href is undefined!");
+		
+		var scripts = $.getLoadedCSS();
+		
+		var removed = false;
+		
+		for (var i = 0; i < scripts.length; i++)
+		{
+			if ($(scripts[i]).attr('href').indexOf(href) > 0)
+			{
+				$(scripts[i]).remove();
+				removed = true;
+				break;
+			}
+		}
+		
+		if (removed) return true;
+		
+		return false;
+	}
+
+	// loads a CSS file into the <head>
+	$.loadCSS = function (href, min, cache)
+	{
+		if (min == undefined) min = false;
+		if (cache == undefined) cache = true;
+		
+		if (min) href = $.min(href);
+	
 		if (href == undefined) throw new Error("CSS href is undefined!");
 		
 		var script = $("<link/>",{
@@ -152,7 +167,7 @@ Window.prototype.norightclick = function ()
 	}
 	
 	// loads less file into head
-	$._loadLess = function (href)
+	$.loadLess = function (href)
 	{
 		if (href == undefined) throw new Error("Less href is undefined!");
 		
@@ -184,11 +199,11 @@ Window.prototype.norightclick = function ()
 				var src = $s.attr(srcTag);
 				
 				if (src == undefined) return false;
-				console.log("SRC: " + src);
+
 	            if (src.indexOf(file) >= 0 )
 	            {
 	                docurl = src.substring(0, src.indexOf(file));
-	                console.log("MATCH: " + docurl);
+
 	                return true;
 	            }
 	            
@@ -285,32 +300,37 @@ Window.prototype.norightclick = function ()
 	
 	$.fn.loadJSSrcs.unload = function ()
 	{	
-		$.log('unloading');
+		clog('unloading');
 		
 		// delete object.name
 	}
 	
 	// function used for logging
-	$.log = $.fn.log = function (msg, stringify)
+	$.log = $.fn.log = function (msg, stringify, type, stackTrace)
 	{
+		if (type == undefined) type = 'log';
 		if (stringify == undefined) stringify = false;
+		if (stackTrace == undefined) stackTrace = false;
 		
 		if (console)
 		{
 			if (stringify) msg = JSON.stingify(msg);
 			
-			console.error(msg);
-
+			if (type == 'warn') console.warn(msg);
+			if (type == 'error') console.error(msg);
+			else console.log(msg);
+			
 			if (typeof this == 'object')
 			{
 				console.dir(this);
-				//window.console && console.dir(this);				
 			}
-			
-
-			
-			window.console && console.log((new Error()).stack);
+						
+			if (stackTrace) window.console && console.log((new Error()).stack);
+		
+			return true;
 		}
+		
+		return false;
 	}
 	
 	// redraws element to freshs its layout
@@ -657,7 +677,7 @@ Window.prototype.norightclick = function ()
 		return false;
 	}
 	
-	
+
 	/**
 	* unsets a hash variable after ?
 	*/
@@ -742,14 +762,8 @@ Window.prototype.norightclick = function ()
 			
 				val = decodeURI(val);
 				
-				if (val == 'null') val = null;
-					
-				if (val == 'false') val = false;
-				if (val == 'true') val = true;
+				val = parse(val);
 				
-				if (val == parseInt(val)) val = parseInt(val);
-				if (val == parseFloat(val)) val = parseFloat(val);
-								 
 				data[key] = val;
 			}		
 		}
@@ -757,6 +771,96 @@ Window.prototype.norightclick = function ()
 		return data;
 	}
 	
+	/**
+	* gets the inverted color of the input color
+	*/
+	$.inverseColor = function (c)
+	{
+	    var color = c;
+	    
+	    color = color.substring(1);
+	    color = parseInt(color, 16);
+	    color = 0xFFFFFF ^ color;
+	    color = color.toString(16);
+	    color = ("000000" + color).slice(-6);
+	    color = "#" + color;
+	    
+	    return color;
+	}
+
+	/**
+	* affix item to page when scrolling past it
+	*/
+	$.fn.affixTop = function (top, options)
+	{
+		if (top == undefined) top = 0;
+		
+		var t = this;
+
+		if (options == undefined) options = {};
+	
+		var defaults = 
+		{
+			marginTop: 0,
+			marginLeft: 0,
+			marginBottom: 0,
+			marginRight: 0
+		}
+		
+				
+		options = $.extend(true, {}, defaults, options);
+	
+		var w = $(t).outerWidth();	
+
+		var oT = $(t).offset().top;
+			
+		var orgPos = $(t).css('position');
+		var orgTop = $(t).css('top');
+
+		var mt = $(t).css('margin-top');
+		var ml = $(t).css('margin-left');
+		var mb = $(t).css('margin-bottom');		
+		var mr = $(t).css('margin-right');
+		
+		// starts tracking scroll
+		
+		$(window).scroll(function(){
+			// gets elements offset from top			
+			
+			var st = $(this).scrollTop();
+						
+			if ((st + top) >= oT)
+			{
+				if (!$(t).hasClass('affix'))
+				{	
+					$(t).addClass('affix')
+						.css('width', w)
+						.css('position', 'fixed')
+						.css('margin-top', options.marginTop)
+						.css('margin-left', options.marginLeft)
+						.css('margin-bottom', options.marginBottom)
+						.css('margin-right', options.marginRight)
+						.css('top', top);
+				}
+			}
+			else
+			{
+				if ($(t).hasClass('affix'))
+				{
+					$(t).removeClass('affix')
+						.css('width', '')
+						.css('position', orgPos)
+						.css('margin-top', mt)
+						.css('margin-left', ml)
+						.css('margin-bottom', mb)
+						.css('margin-right', mr)
+						.css('top', '');
+				}
+			}
+		});
+		
+		return true;
+	}
 	
 	/**
 	* goes through a div and checks all required fields
@@ -764,16 +868,26 @@ Window.prototype.norightclick = function ()
 	$.fn.validateForm = function ()
 	{
 		var valid = true;
+		// rechecks plugins
+		checkPlugins();
 		
 		var t = this;
 		
 		$(t).clearInputWarnings();
 		
-		$(t).find("[required='']").each(function(index, el){
+		$(t).find("[required=''], [optional='']").each(function(index, el){
 			var $el = $(el);
 			var msg = $el.data('msg');
+			var match = $el.data('match');
+			var tag = $el.prop('tagName');
+			var optional = $el.attr('optional');
+			clog(optional);
+			optional = (optional !== undefined && optional.length > 0) ? true : false;
+
+			// if optional skips if empty
+			if (optional && $el.val().length <= 0) return true;
 			
-			if ($el.prop('tagName') == 'INPUT')
+			if (tag == 'INPUT')
 			{
 				if ($el.attr('type').toUpperCase() == 'TEXT' || $el.attr('type').toUpperCase() == 'PASSWORD')
 				{
@@ -786,7 +900,57 @@ Window.prototype.norightclick = function ()
 						$el.focus();
 						$el.inputWarn();
 						
-						return false;	
+						return false;
+					}
+					
+					// checks if value needs to match another input. Example: confirm password
+					if (match !== undefined)
+					{
+						var $match = $('#' + match);
+						
+						if ($el.val() !== $match.val())
+						{
+							valid = false;
+						
+							msg = $match.data('msg');
+							
+							if (msg !== undefined) Warning(msg);
+							
+							$match.focus();
+							$match.inputWarn();
+
+							return false;
+						}
+					}
+				}
+			}
+			else if (tag == 'SELECT')
+			{
+				// if bootstrap select plugin is being used
+				if (plugins.selectpicker)
+				{
+					if ($el.val().length <= 0)
+					{
+						valid = false;
+						
+						if (msg !== undefined) Warning(msg);
+						$el.focus();
+						$el.inputWarn();
+						return false;
+					}					
+				}
+				else
+				{
+					// regular select elements
+					if ($el.is('selected') == false)
+					{
+						valid = false;
+						
+						if (msg !== undefined) Warning(msg);
+						$el.focus();
+						$el.inputWarn();
+						
+						return false;
 					}
 				}
 			}
@@ -883,7 +1047,7 @@ Window.prototype.norightclick = function ()
 			if (velocity) 
 			{	
 				$span.velocity('fadeIn', { 
-					duration: options.duraiton, 
+					duration: 400, 
 					complete: function ()
 					{
 						$span.remove();
@@ -999,6 +1163,21 @@ Window.prototype.norightclick = function ()
 		
 	}
 
+	$.randomString = function (length, chars)
+	{
+		if (length == undefined) length = 16;
+		if (chars == undefined) chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		
+		var result = '';
+		
+		for (var i = length; i > 0; --i)
+		{
+			result += chars[Math.round(Math.random() * (chars.length - 1))];
+		}
+		
+		return result;
+	}
+
 	$(window).on('jquery.redirect', function (e, url)
 	{
 		$(window).trigger('preprocess.redirect', [url]);
@@ -1068,6 +1247,22 @@ Window.prototype.isJS = function (src)
 };
 
 
+Window.prototype.parse = function (val)
+{
+	if (val == undefined) return undefined;
+	
+	if (val == 'false') val = false;
+	if (val == 'true') val = true;
+	if (val == 'undefined') val = undefined;
+
+	if (val == 'null') val = null;
+	
+	if (val == parseInt(val)) val = parseInt(val);
+	if (val == parseFloat(val)) val = parseFloat(val);
+	
+	return val;
+}
+
 /**
 * gets a URL paramater
 */
@@ -1106,17 +1301,49 @@ Window.prototype.GETParam = function (param)
 	
 	val = decodeURI(val);
 	
-	//if (val == undefined) val = null;
-	        	
-	if (val == 'false') val = false;
-	if (val == 'true') val = true;
-	if (val == 'undefined') val = undefined;
-
-	if (val == 'null') val = null;
-	
-	if (val == parseInt(val)) val = parseInt(val);
-	if (val == parseFloat(val)) val = parseFloat(val);
-
+	val = parse(val);
 	
     return val;
 };
+
+Window.prototype.inverseColor = function (color)
+{
+	return jQuery.inverseColor(color);
+}
+
+Window.prototype.clog = function (msg, stringify, stackTrace)
+{
+	return jQuery.log(msg, stringify, 'log', stackTrace);
+}
+
+Window.prototype.cwarn = function (msg, stringify, stackTrace)
+{
+	return jQuery.log(msg, stringify, 'warn', stackTrace);
+}
+
+Window.prototype.cerror = function (msg, stringify, stackTrace)
+{
+	return jQuery.log(msg, stringify, 'error', stackTrace);
+}
+
+String.prototype.nl2br = function()
+{
+    return this.replace(/\n/g, "<br />");
+}
+
+
+function checkPlugins ()
+{
+	plugins.number = (jQuery().number) ? true : false;
+	plugins.velocity = (jQuery().velocity) ? true : false;
+	plugins.selectpicker = (jQuery.fn.selectpicker) ? true : false;
+	
+	return true;
+}
+
+// no right click context menu; usage: norightclick(); - easy peasy
+
+Window.prototype.norightclick = function ()
+{
+	$(document).bind("contextmenu",function(e){ return false; });
+}

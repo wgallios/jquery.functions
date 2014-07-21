@@ -12,7 +12,9 @@
 	    max:99999,
 		increment:1,
 		displayWarning: true,
-		invalidUpdate: true
+		invalidUpdate: true,
+		onChange: function (val){},
+		incrementValues: [] // if regular numbers are not used, can enter an array for custom increments
 	};
 	
 	function inputSpinner (el, options)
@@ -53,9 +55,12 @@
 		if (newVal > o.max) return false;
 		
 		$input.val(newVal);
+		
 		this.updateOrgInput(newVal);
 				
 		this.$el.trigger('input.spinner.increase', newVal);
+		
+		if (o.onChange !== undefined && typeof o.onChange == 'function') o.onChange(newVal);
 		
 		return	newVal;
 	};
@@ -86,6 +91,8 @@
 
 		this.$el.trigger('input.spinner.increase', newVal);
 		
+		if (o.onChange !== undefined && typeof o.onChange == 'function') o.onChange(newVal);
+				
 		return newVal;	
 	}
 	
@@ -184,6 +191,7 @@
 	fn.bindEvents = function ($input)
 	{
 		var t = this;
+		var o = this.options;
 		
 		if ($input == undefined) throw new Error("Input is undefined! not able to bind events");
 		
@@ -193,6 +201,8 @@
 			if (!valid && t.options.displayWarning) Warning("Input value is not valid!<br><b>Min: </b> " + t.options.min + "<br><b>Max: </b> " + t.options.max);
 			
 			if (t.options.invalidUpdate) t.updateOrgInput($input.val());
+			
+			if (o.onChange !== undefined && typeof o.onChange == 'function') o.onChange($input.val());
 			
 		});
 		

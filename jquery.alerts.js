@@ -1,11 +1,13 @@
+
+
 ;(function($){
- 
+
  	var defaults = 
 	{
 		debug: false,
 		type: 'warning', // warning, success, danger, info
 		opacity:0.9,
-		borderRadius:10,
+		borderRadius:4,
 		clearTimeoutSeconds:3, // 0 for no timeout
 		animation:
 		{
@@ -16,8 +18,8 @@
 			id: 'jquery-alerts-container',
 			clas: 'jquery-alerts-container', // default container class
 			width: '30%',
-			x: 30,
-			y: 30
+			right: 15,
+			top: 15
 		},
 		defaultHeaders:
 		{
@@ -89,10 +91,10 @@
 		{
 			$container = $("<div>", {class: o.container.clas});
 			
-			$container.css('width', o.container.width);
+			$container.css('width', o.container.width)
 //				.css('padding', '30px');
-	//			.css('top', o.container.x)
-	//			.css('left', o.container. y);
+				.css('right', o.container.right)
+				.css('top', o.container.top);
 			
 			//this.$container = $container;
 		
@@ -239,6 +241,22 @@
 		return true;
 	}
 	
+	fn.windowOnload = function ()
+	{
+	Warning("test");
+	if (GETParam('site-alert') !== undefined && GETParam('site-alert').length > 0 ) Warning(GETParam('site-alert'));
+	if (GETParam('site-info') !== undefined && GETParam('site-info').length > 0 ) Info(GETParam('site-info'));
+	//if (GETParam('site-error') !== undefined && GETParam('site-error').length > 0 ) Danger(GETParam('site-error'));
+	if (GETParam('site-danger') !== undefined && GETParam('site-danger').length > 0 ) Danger(GETParam('site-danger'));
+	if (GETParam('site-success') !== undefined && GETParam('site-success').length > 0 ) Success(GETParam('site-success'));
+	
+	if (GETParam('warning') !== undefined && GETParam('warning').length > 0 ) Warning(GETParam('warning'));
+	if (GETParam('info') !== undefined && GETParam('info').length > 0 ) Info(GETParam('info'));
+	if (GETParam('danger') !== undefined && GETParam('danger').length > 0 ) Danger(GETParam('danger'));
+	if (GETParam('error') !== undefined && GETParam('error').length > 0 ) Danger(GETParam('error'));
+	if (GETParam('success') !== undefined && GETParam('success').length > 0 ) Success(GETParam('success'));
+	return true;
+	}
 
 	// jquery adapter
 	$.fn.alerts = function (msg, header, options)
@@ -251,6 +269,7 @@
 		});
 	};
 	
+
 	
 	$.alerts = fn;
 
@@ -260,6 +279,7 @@
 	}
 
 })(jQuery);
+
 
 Window.prototype.Warning = function (msg, header, options)
 {
@@ -293,3 +313,5 @@ Window.prototype.clearAlert = function ($alert)
 {
 	return jQuery.alerts.clearAlert($alert);
 }
+
+//jQuery.alerts.windowOnload();
