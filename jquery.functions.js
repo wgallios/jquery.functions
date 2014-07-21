@@ -875,11 +875,17 @@ var plugins = {};
 		
 		$(t).clearInputWarnings();
 		
-		$(t).find("[required='']").each(function(index, el){
+		$(t).find("[required=''], [optional='']").each(function(index, el){
 			var $el = $(el);
 			var msg = $el.data('msg');
 			var match = $el.data('match');
 			var tag = $el.prop('tagName');
+			var optional = $el.attr('optional');
+			clog(optional);
+			optional = (optional !== undefined && optional.length > 0) ? true : false;
+
+			// if optional skips if empty
+			if (optional && $el.val().length <= 0) return true;
 			
 			if (tag == 'INPUT')
 			{
