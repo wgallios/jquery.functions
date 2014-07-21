@@ -39,11 +39,10 @@ var hashDelimiter = '|';
 // object that checks for plugins
 var plugins = {};
 
-plugins.number = (jQuery().number) ? true : false;
-plugins.velocity = (jQuery().velocity) ? true : false;
-
 ;(function($){
 	'use strict';
+
+	checkPlugins();
 	
 	// jquery function to check if element exists;
 	$.fn.exists = function ()
@@ -869,6 +868,8 @@ plugins.velocity = (jQuery().velocity) ? true : false;
 	$.fn.validateForm = function ()
 	{
 		var valid = true;
+		// rechecks plugins
+		checkPlugins();
 		
 		var t = this;
 		
@@ -877,8 +878,10 @@ plugins.velocity = (jQuery().velocity) ? true : false;
 		$(t).find("[required='']").each(function(index, el){
 			var $el = $(el);
 			var msg = $el.data('msg');
+			var match = $el.data('match');
+			var tag = $el.prop('tagName');
 			
-			if ($el.prop('tagName') == 'INPUT')
+			if (tag == 'INPUT')
 			{
 				if ($el.attr('type').toUpperCase() == 'TEXT' || $el.attr('type').toUpperCase() == 'PASSWORD')
 				{
@@ -891,7 +894,57 @@ plugins.velocity = (jQuery().velocity) ? true : false;
 						$el.focus();
 						$el.inputWarn();
 						
-						return false;	
+						return false;
+					}
+					
+					// checks if value needs to match another input. Example: confirm password
+					if (match !== undefined)
+					{
+						var $match = $('#' + match);
+						
+						if ($el.val() !== $match.val())
+						{
+							valid = false;
+						
+							msg = $match.data('msg');
+							
+							if (msg !== undefined) Warning(msg);
+							
+							$match.focus();
+							$match.inputWarn();
+
+							return false;
+						}
+					}
+				}
+			}
+			else if (tag == 'SELECT')
+			{
+				// if bootstrap select plugin is being used
+				if (plugins.selectpicker)
+				{
+					if ($el.val().length <= 0)
+					{
+						valid = false;
+						
+						if (msg !== undefined) Warning(msg);
+						$el.focus();
+						$el.inputWarn();
+						return false;
+					}					
+				}
+				else
+				{
+					// regular select elements
+					if ($el.is('selected') == false)
+					{
+						valid = false;
+						
+						if (msg !== undefined) Warning(msg);
+						$el.focus();
+						$el.inputWarn();
+						
+						return false;
 					}
 				}
 			}
@@ -1272,6 +1325,15 @@ String.prototype.nl2br = function()
     return this.replace(/\n/g, "<br />");
 }
 
+
+function checkPlugins ()
+{
+	plugins.number = (jQuery().number) ? true : false;
+	plugins.velocity = (jQuery().velocity) ? true : false;
+	plugins.selectpicker = (jQuery.fn.selectpicker) ? true : false;
+	
+	return true;
+}
 
 // no right click context menu; usage: norightclick(); - easy peasy
 
