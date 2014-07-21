@@ -16,8 +16,8 @@
 			id: 'jquery-alerts-container',
 			clas: 'jquery-alerts-container', // default container class
 			width: '30%',
-			x: 30,
-			y: 30
+			right: 15,
+			top: 15
 		},
 		defaultHeaders:
 		{
@@ -89,10 +89,10 @@
 		{
 			$container = $("<div>", {class: o.container.clas});
 			
-			$container.css('width', o.container.width);
+			$container.css('width', o.container.width)
 //				.css('padding', '30px');
-	//			.css('top', o.container.x)
-	//			.css('left', o.container. y);
+				.css('right', o.container.right)
+				.css('top', o.container.top);
 			
 			//this.$container = $container;
 		
