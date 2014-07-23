@@ -1,16 +1,24 @@
+/**
+* Dialog does utilzie Bootstrap Styles
+*/
+
 ;(function($){
  
  	var defaults = 
 	{
 		target: 'body',
-		header: undefined,
+		header: 'Confirm',
 		debug: false,
 		zoom: 90,
 		height:150,
 		width:300,
 		bounce:20,
-		duration:800,
+		duration:300,
 		backdropOpacity:0.6,
+		backdrop:
+		{
+			className: 'modal-backdrop fade in'
+		},
 		closeBtn: true,
 		containerClass: 'dialog-container',
 		accept:
@@ -18,6 +26,7 @@
 			show: true,
 			close: true,
 			text: "Ok",
+			className: 'btn btn-primary',
 			clickFunction: function() {}
 		},
 		deny:
@@ -25,6 +34,7 @@
 			show: false,
 			close: true,
 			text: "Cancel",
+			className: 'btn btn-default',
 			clickFunction: function() {}
 		}		
 	}
@@ -50,13 +60,15 @@
 	{
 		var t = this;
 		
-		
+		t.buildDialog(msg, $('body'));
+
+		/*		
 		t.wrapContent(function($wrap, $container){
 			t.zoomOut($wrap);
-			t.buildDialog(msg, $container);	
+			t.buildDialog(msg, $container);
 		});
 		
-		
+		*/	
 	}
 	
 	fn.wrapContent = function (sf)
@@ -87,35 +99,8 @@
 		$container = $("<div>", { id: 'dialog-content-container' });		
 
 
-		
 		$div.css('backgroundColor', '#333333')
 			.css('opacity', 0);
-			
-			
-
-		
-		//$('body > div').css('overflow', 'hidden');
-		/*
-		$wrap.css('backgroundColor', t.orgColor)
-			.css('backgroundImage', t.orgImg)
-			.css('backgroundRepeat', t.orgRepeat)
-			.css('width', w)
-			.css('height', h)
-			.css('padding-top', t.paddingTop)
-			.css('padding-left', t.paddingLeft)
-			.css('padding-bottom', t.paddingBottom)
-			.css('padding-right', t.paddingRight)
-			.css('overflow', 'hidden');
-			
-		var html = $.parseHTML($('body').html());
-		
-		$wrap.append(html);
-		$wrap.append($div);
-
-
-		
-		$(document.body).html( $wrap );
-		*/
 		
 		$('body')
 			.prepend($div)
@@ -177,6 +162,12 @@
 	{
 		var t = this;
 		
+		$backdrop = $("<div>", { id:'dialog-content-backdrop', class: this.options.backdrop.className });
+		
+		$wrapBack = $("<div>", { id: 'dialog-content-container-backdrop' });
+		
+		$wrap = $("<div>", { id: 'dialog-content-container' });
+		
 		$dc = $("<div>", { class: this.options.containerClass });
 
 		$dc.css('display', 'inline-block')
@@ -201,18 +192,21 @@
 		$dc.append($body);
 		
 		$dc.append($footer);
+		
+		
+		$wrap.append($dc);
 
 		
 
 		
 		if (t.options.accept.show)
 		{
-			$okBtn = $("<button>", { class: 'dialog-ok-btn', type:'button', html:t.options.accept.text });
+			$okBtn = $("<button>", { class: this.options.accept.className, type:'button', html:t.options.accept.text });
 			
 			$okBtn.click(function(e){
 				e.preventDefault();
 				
-				$(this).attr('disabled', 'disabled');
+				$okBtn.disableSpin();
 				
 				if (t.options.accept.clickFunction !== undefined && typeof t.options.accept.clickFunction == 'function') t.options.accept.clickFunction(e);
 				
@@ -227,12 +221,13 @@
 
 		if (t.options.deny.show)
 		{
-			$denyBtn = $("<button>", { class: 'dialog-deny-btn', type:'button', html:t.options.deny.text });
+			$denyBtn = $("<button>", { class: this.options.deny.className, type:'button', html:t.options.deny.text });
 			
 			$denyBtn.click(function(e){
 				e.preventDefault();
 				
-				$(this).attr('disabled', 'disabled');
+				$denyBtn.disableSpin();
+				//$(this).attr('disabled', 'disabled');
 											
 				$(window).trigger('dialog.cancel');
 			
@@ -255,7 +250,7 @@
 		
 		//console.log(dcTop);	
 		
-		$dc.css('top', dcTop + 'px');
+		//$dc.css('top', dcTop + 'px');
 			//.css('left', dcLeft + 'px')
 			//.css('width', 0)
 			//.css('height', 0);
@@ -264,9 +259,10 @@
 		
 		$body.html(html);
 		
-		$container.append($dc);
+		$container.append($wrap);
+		$container.append($backdrop);
 		
-		$dc.velocity({ opacity:1 });
+		$dc.velocity({ opacity:1 }, { duration: t.options.duration });
 		
 		/*\
 		$dc.velocity({ width:(t.options.width + bounce), height:(t.options.height + bounce) }, {
@@ -279,13 +275,13 @@
 		return $dc;
 	}
 	
-	
 	fn.destroy = function ($dc)
 	{
 		var t = this;
 		
 	
 		$('#dialog-content-container').velocity({ opacity:0 }, {
+			duration: t.options.duration,
 			complete:function()
 			{
 				$('#dialog-content-container').remove();
@@ -297,12 +293,14 @@
 
 
 		$('#dialog-content-backdrop').velocity({ opacity:0 }, {
+			duration: t.options.duration,
 			complete:function()
 			{
 				$(this).remove();
 			}
 		});
-					
+		
+		/*
 		$('body').velocity({
 			scaleX:1,
 			scaleY:1
@@ -322,36 +320,14 @@
 					.css('backgroundRepeat', t.orgRepeat);						
 				}, 1000)
 			
-				/*
-				$('#dialog-content-wrapper').css('overflow', '');
-						
-				$('html, body').css('backgroundColor', '');
-				
-				$('body').css('backgroundColor', this.orgColor);
-				$('body').css('backgroundImage', this.orgImg);
-				$('body').css('backgroundRepeat', this.orgRepeat);
-				
-				$('body').css('padding-top', t.paddingTop)
-						.css('padding-left', t.paddingLeft)
-						.css('padding-bottom', t.paddingBottom)
-						.css('padding-right', t.paddingRight);
-				
-				
-				$('#dialog-content-wrapper').css('padding-top', '0px')
-						.css('padding-left', '0px')
-						.css('padding-bottom', '0px')
-						.css('padding-right', '0px');
-				
-				$(document.body).html( $('#dialog-content-wrapper').html() );
-				*/
-				
-
 
 				 
 				$('body').redraw();
 			}
 		});
+		*/
 		
+		return true;	
 	}
 	
 	// jquery adapter
@@ -374,4 +350,26 @@
 Window.prototype.Dialog = function (msg, options)
 {
 	return jQuery.dialog.constructor(this, msg, options);
+}
+
+
+Window.prototype.Confirm = function (msg, acceptFunction, denyFunction)
+{
+	return jQuery.dialog.constructor(this, msg, { 
+		header: "Cancel",
+		accept:{
+			close: true,
+			clickFunction: function(e)
+			{
+				if (acceptFunction !== undefined && typeof acceptFunction == 'function') acceptFunction(e);
+			}
+		},
+		deny:{
+			show: true,
+			clickFunction: function(e)
+			{
+				if (denyFunction !== undefined && typeof denyFunction == 'function') acceptFunction(e);
+			}
+		}
+	});
 }
