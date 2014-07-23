@@ -45,6 +45,15 @@
 	
 	.inputSpinnerBtnContainer
 	{
+		.inner
+		{
+			display: table-caption;
+		    width: 100%;
+		    padding: 0;
+		    margin: 0;
+		    position: relative;
+		    float: right;
+		};
 
 
 		height: 100%;
@@ -56,6 +65,8 @@
 		{
 			background: white;
 			border:none;
+			box-shadow: none;
+			outline: none;
 		};
 
 		.inputSpinnerUpBtn:hover, .inputSpinnerDnBtn:hover
@@ -63,6 +74,13 @@
 			background:@hoverBG;
 		}
 		
+		.inputSpinnerUpBtn:focus, .inputSpinnerDnBtn:focus,	.inputSpinnerUpBtn:active, .inputSpinnerDnBtn:active
+		{
+			background:@hoverBG;
+			box-shadow: none;
+			outline: none;
+		}
+				
 		.inputSpinnerUpBtn, .inputSpinnerDnBtn
 		{
 			color:@color;

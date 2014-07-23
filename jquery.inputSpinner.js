@@ -119,9 +119,12 @@
 		$dnBtn.html("-");
 				
 		var $btnContainer = $("<div>", { class:'inputSpinnerBtnContainer' });
+		var $inner = $("<div>", { class:'inner' });
 		
-		$btnContainer.prepend($upBtn);
-		$btnContainer.append($dnBtn);
+		$btnContainer.append($inner);
+		
+		$inner.prepend($upBtn);
+		$inner.append($dnBtn);
 				
 		var $input = $("<input>", { class:'inputSpinner' });
 
