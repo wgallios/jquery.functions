@@ -256,7 +256,6 @@ var plugins = {};
 			try
 			{
 
-				//$.log((new Error).lineNumber);
 				//throw new Error(this);
 				if (url == undefined) throw new Error("no URL");
 				
@@ -289,7 +288,7 @@ var plugins = {};
 			},
 			error: function (xhr, ajaxOptions, thrownError)
 			{
-				$.log("Unable to fetch Javascript file: " + url + " [" + thrownError + "]");
+				clog("Unable to fetch Javascript file: " + url + " [" + thrownError + "]");
 				
 				if (errorFunction !== undefined && errorFunction == 'function') errorFunction(xhr, ajaxOptions, thrownError);
 			}
@@ -897,7 +896,7 @@ var plugins = {};
 			var match = $el.data('match');
 			var tag = $el.prop('tagName');
 			var optional = $el.attr('optional');
-			clog(optional);
+
 			optional = (optional !== undefined && optional.length > 0) ? true : false;
 
 			// if optional skips if empty
