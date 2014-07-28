@@ -40,20 +40,25 @@
 		},
 		initHeader: undefined,
 		initmsg: undefined,
+		inline: false, // prepends alert to element rather than into container
 		display: true // if False just returns HTML
 	};
  	
  	function alerts (el, msg, header, options)
 	{
 		this.options = $.extend(true, {}, defaults, options);
+		this.el = el;
 		this.$el = $(el);
 		this.index = this.$el.index();
 		
-
 		// checks if the velocity plugin is enabled
 		this.velocity = (jQuery().velocity) ? true : false;
 
-		if (this.options.display)
+		if (this.options.inline && this.options.display)
+		{
+			return this.buildAlert(el, msg, header);
+		}
+		else if (this.options.display)
 		{
 			var $alert = this.init(msg, header);
 
@@ -153,22 +158,21 @@
 				
 		var h = $alert.outerHeight(); // gets final height for alert
 		
-		$alert.css('opacity', 0)
-			.css('height', 0 + 'px')
+		$alert.css('display', 'none')
+			//.css('height', 0 + 'px')
 			.css('border-radius', o.borderRadius);
 		
 
 		
 		if (this.velocity)
 		{
-			$alert.velocity({ opacity:o.opacity, height:h });
-			//$alert.velocity('slideDown', {});
+			//$alert.velocity({ opacity:o.opacity, height:h });
+			$alert.velocity('slideDown', {});
 
 		}
 		else
 		{
-			$alert.css('opacity', o.opacity)
-				.css('height', '');
+			$alert.fadeIn();
 		}
 		
 		t.setAlertTimeout($alert);
@@ -223,7 +227,7 @@
 		
 		if (vel)
 		{
-			$alert.velocity({ opacity:0 }, {
+			$alert.velocity('slideUp', {
 				duration: duration,
 				complete:function()
 				{
@@ -275,8 +279,54 @@
 
 	$.fn.Warning = function (msg, header, options)
 	{
-		return $(this).alerts(msg, header, options);
+		var t = this;
+		
+		$alert = $.fn._inline(t, 'warning', msg, header, options);
+		
+		return $alert;
+	};
+
+	$.fn.Success = function (msg, header, options)
+	{
+		var t = this;
+		
+		$alert = $.fn._inline(t, 'success', msg, header, options);
+		
+		return $alert;
+	};
+	
+	$.fn.Info = function (msg, header, options)
+	{
+		var t = this;
+		
+		$alert = $.fn._inline(t, 'info', msg, header, options);
+		
+		return $alert;
+	};
+	
+	$.fn.Danger = function (msg, header, options)
+	{
+		var t = this;
+		
+		$alert = $.fn._inline(t, 'danger', msg, header, options);
+		
+		return $alert;
+	};
+	
+	$.fn._inline = function (el, type, msg, header, options)
+	{
+
+		var inlineDefaultOptions = 
+		{
+			type: type,
+			inline: true
+		};
+		
+		options = $.extend(true, {}, inlineDefaultOptions, options);
+		
+		return new alerts(el, msg, header, options);
 	}
+	
 
 })(jQuery);
 
