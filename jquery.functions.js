@@ -709,7 +709,7 @@ var plugins = {};
 	}
 	
 	/**
-	* gets a hash variable value #?x=123 would return Int 123
+	* gets a hash variable value #!x=123 would return Int 123
 	*/
 	$.hashVal = function (k)
 	{
@@ -731,7 +731,7 @@ var plugins = {};
 	}
 	
 	/**
-	* gets all hash variables after ?
+	* gets all hash variables after !
 	*/
 	$.getHashVars = function ()
 	{
@@ -1148,16 +1148,82 @@ var plugins = {};
 		
 	}
 	
-	$.addParam = function (data, key, val)
+	/*
+	* adds a Get paramater value to a URL string
+	*
+	* @param {String} key
+	* @param {String} val
+	* @param {String} url (optional) - will use address bar for a string if nothing is passed
+	*
+	* @return {String} - new URL string. Example (key = y, val = 2): http://domain.com?x=1#abc will return http://domain.com?x=1&y=2#abc
+	*/
+	$.addGETParam = function (key, val, url, update)
 	{
+		// if no url, will use browser URL address
+		if (url == undefined) url = window.location.href;
+		if (update == undefined) update = true; // default is to check key val
+
+		var pre;
+		var hash;
+		
+		if (url.indexOf('#') > -1)
+		{
+			hash = url.substring(url.indexOf('#'));
+			
+			url = url.substring(0, url.indexOf('#'));
+		}
+		
+		if (url.indexOf('?') > -1)
+		{
+			pre = url.substring(0, url.indexOf('?') + 1);
+			
+			url = url.substring(url.indexOf('?') + 1);
+		}
+		else
+		{	
+			pre = url + '?';
+			url = null;
+		}
+		
+		var data = $.addParam(url, key, val, update);
+		
+		if (pre !== undefined) data = pre + data;
+		if (hash !== undefined) data = data + hash;
+		
+		
+		return data;
+	
+	};
+	
+	
+	/**
+	* adds a value to a serialized data string
+	*
+	* @param {String} data - URL
+	*
+	*/
+	$.addParam = function (data, key, val, update)
+	{
+
 		if (data == undefined) data = '';
+		
+		if (update == undefined) update = true; // default is to check key val
 		
 		if (typeof data == 'string')
 		{
-			var encodeData = encodeURI(key) + '=' + encodeURI(val);
+			var check = $.addParam._checkKey(data, key, val, update);
 			
-			if (data.length > 0) data += '&' + encodeData;
-			else data = encodeData;
+			// key was not found, continues on
+			if (!check)
+			{
+				var encodeData = encodeURI(key);
+							
+				if (val !== undefined) encodeData += "=" + encodeURI(val);
+				
+				if (data.length > 0) data += '&' + encodeData;
+				else data = encodeData;
+			}
+			else data = check;
 		}
 		
 		if (typeof data == 'object' && data instanceof Array)
@@ -1172,6 +1238,96 @@ var plugins = {};
 		
 		return data;
 	}
+	
+	/**
+	* private funciton for addParam. Checks if key already exists, if so, updates rather than appends data string
+	*/
+	$.addParam._checkKey = function (data, key, val, update)
+	{
+		if (update == undefined) update = true;
+		
+    	var vars = data.split('&');
+    	
+    	var keyFound = false;
+    	
+    	
+    	
+		for (var i = 0; i < vars.length; i++) 
+		{
+			var k;
+			var v;
+			
+	    	// if isset but no val, will return null not undefined
+	    	if (vars[i].indexOf('=') < 0)
+	    	{
+	    		k = vars[i];
+	    	}
+	    	else
+	    	{
+		    	var chunks = vars[i].split('=');
+		    	
+		    	k = chunks[0];
+				v = chunks[1];
+	    	}
+	    	
+	    	if (k == key)
+	    	{
+		    	keyFound = true;
+		    	
+		    	if (update) data = $.addParam._updateKey(data, k, val);
+		    	
+		    	break;
+	    	}
+    	}
+    
+		if (keyFound) return data;
+    
+		return false;
+	}
+	
+	$.addParam._updateKey = function (data, key, val)
+	{
+		var vars = data.split('&');
+
+		var buildData = '';
+		
+		for (var i = 0; i < vars.length; i++) 
+		{
+			var k;
+			var v;
+			
+			//clog(vars[i]);
+
+	    	// if isset but no val, will return null not undefined
+	    	if (vars[i].indexOf('=') < 0)
+	    	{
+	    		k = vars[i];
+	    	}
+	    	else
+	    	{
+		    	var chunks = vars[i].split('=');
+		    	
+		    	k = chunks[0];
+		    	v = chunks[1];
+	    	}
+	    	
+	    	buildData += '&' + k;
+
+	    	if (k == key)
+	    	{
+				if (val !== undefined && val.length > 0) buildData += '=' + val;
+	    	}
+	    	else
+	    	{
+
+		    	if (v !== undefined && v.length > 0) buildData += '=' + v;
+	    	}
+		};	
+	
+		if (buildData.length > 0) buildData = buildData.substring(1);
+		
+		return buildData;
+	};
 
 	$.fn.ajaxLoader = function ()
 	{
@@ -1280,11 +1436,30 @@ Window.prototype.parse = function (val)
 
 /**
 * gets a URL paramater
+* 
+* @param {String} param - GET param you are looking to get the value of
+* @param {String} (optional) url - pass a string URL to get the Param from rather than from address bar
+*
+* @return - parsed value
 */
-Window.prototype.GETParam = function (param)
+Window.prototype.GETParam = function (param, url)
 {
-    var url = window.location.search.substring(1);
-    
+	if (url == undefined) url = '';
+	
+	if (url.length <= 0)
+	{
+		url = window.location.search.substring(1);
+	}
+	else
+	{
+		// gets everything after ?
+		if (url.indexOf('?') > -1) url = url.substring(url.indexOf('?') + 1);
+		else return false;
+		
+		// removes hash params if set
+		if (url.indexOf('#') > -1) url = url.substring(0, url.indexOf('#'));
+	}
+
     var urlVars = url.split('&');
     
     var val;
