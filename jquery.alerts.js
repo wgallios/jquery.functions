@@ -247,7 +247,7 @@
 	
 	fn.windowOnload = function ()
 	{
-	Warning("test");
+
 	if (GETParam('site-alert') !== undefined && GETParam('site-alert').length > 0 ) Warning(GETParam('site-alert'));
 	if (GETParam('site-info') !== undefined && GETParam('site-info').length > 0 ) Info(GETParam('site-info'));
 	//if (GETParam('site-error') !== undefined && GETParam('site-error').length > 0 ) Danger(GETParam('site-error'));
@@ -261,6 +261,22 @@
 	if (GETParam('success') !== undefined && GETParam('success').length > 0 ) Success(GETParam('success'));
 	return true;
 	}
+	
+	// function to parse HTML markup alerts
+	fn.htmlAlerts = function ()
+	{
+		$('alert').each(function(i, el){
+
+			var options = $(el).data('options');
+
+			if ($(el).data('type').toUpperCase() == 'WARNING') $(el).Warning($(el).data('msg'), $(el).data('header'), options);
+			if ($(el).data('type').toUpperCase() == 'SUCCESS') $(el).Success($(el).data('msg'), $(el).data('header'), options);			
+			if ($(el).data('type').toUpperCase() == 'INFO') $(el).Info($(el).data('msg'), $(el).data('header'), options);			
+			if ($(el).data('type').toUpperCase() == 'DANGER') $(el).Danger($(el).data('msg'), $(el).data('header'), options); // stranger danger
+		});
+
+		return true;
+	};
 
 	// jquery adapter
 	$.fn.alerts = function (msg, header, options)
@@ -365,3 +381,4 @@ Window.prototype.clearAlert = function ($alert)
 }
 
 //jQuery.alerts.windowOnload();
+jQuery.alerts.htmlAlerts();
