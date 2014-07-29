@@ -15,6 +15,7 @@ Extra jQuery functions I use.
 		inheritClasses: false,
 		filePostKey: 'file',
 		showProgress: true,
+		extraParams: {}, // example: { type:1, key:value } 
 		successFunction: function(){},
 		CSRF:
 		{
