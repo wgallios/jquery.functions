@@ -81,7 +81,7 @@ Extra jQuery functions I use.
 	Info("Information Message"[, 'Info'[, options]]);
 
 <h3>HTML 5 Markup</h3>
-	<alert data-type='warning' data-msg='This contact has no attachments.' data-options='{"clearTimeoutSeconds":"0"}'></alert>
+	<alert data-type='warning' data-heading='Alert' data-msg='This contact has no attachments.' data-options='{"clearTimeoutSeconds":"0"}'></alert>
 	
 <h2>License</h2>
 
