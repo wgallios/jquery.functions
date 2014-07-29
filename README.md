@@ -2,6 +2,9 @@
 
 Extra jQuery functions I use.
 
+<h2>Documentation</h2>
+<a href='http://wgallios.github.io/jquery.functions'>Click here for documentation</a>
+
 <h2>Uploader</h2>
 
 <p>Uploader Replaces HTML file uploader</p>
@@ -15,6 +18,7 @@ Extra jQuery functions I use.
 		inheritClasses: false,
 		filePostKey: 'file',
 		showProgress: true,
+		extraParams: {}, // example: { type:1, key:value } 
 		successFunction: function(){},
 		CSRF:
 		{
