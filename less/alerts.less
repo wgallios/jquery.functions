@@ -4,84 +4,83 @@
 	display: block;
 	height: auto;
 	z-index:999999;
+};
+
+.jquery-alert
+{
+	position: relative;
+	margin-bottom:15px;
+	display: block;
+
+	//margin-left:15px;
+	//margin-right:15px;
+
+	z-index:9999;
+	width:100%;
+	height:auto;
+	padding:10px 15px;
+	font-size: 1em;
+	border-style: solid;
+	border-width: 1px;
 	
-		.jquery-alert
-		{
-			position: relative;
-			margin-bottom:15px;
-			display: block;
-		
-			//margin-left:15px;
-			//margin-right:15px;
-		
-			z-index:9999;
-			width:100%;
-			height:auto;
-			padding:10px 15px;
-			font-size: 1em;
-			border-style: solid;
-			border-width: 1px;
-			
-			h3
-			{
-				margin:0 0 10px 0;
-				font-size:1.4em;
-			}
-			
+	h3
+	{
+		margin:0 0 10px 0;
+		font-size:1.4em;
+	}
+	
 
-		}
+}
 
-		.jquery-alert-warning
-		{
-			color:@warningColor;
-			background: #fcf8e3;
-			background-image: linear-gradient(to bottom,#fcf8e3 0,#f8efc0 100%);
-			border-color: #f5e79e;
-			
-			h3
-			{
-				color:@warningColor;
-			}
-		}
+.jquery-alert-warning
+{
+	color:@warningColor;
+	background: #fcf8e3;
+	background-image: linear-gradient(to bottom,#fcf8e3 0,#f8efc0 100%);
+	border-color: #f5e79e;
+	
+	h3
+	{
+		color:@warningColor;
+	}
+}
 
-		.jquery-alert-success
-		{
-			color:#3c763d;
-			background: #dff0d8;
-			background-image: linear-gradient(to bottom,#dff0d8 0,#c8e5bc 100%);
-			border-color: #b2dba1;
-			
-			h3
-			{
-				color:@successColor;
-			}
-		}
-		
-		.jquery-alert-danger
-		{
-			color:#a94442;
-			background: #f2dede;
-			background-image: linear-gradient(to bottom,#f2dede 0,#e7c3c3 100%);
-			border-color:#dca7a7;
-			
+.jquery-alert-success
+{
+	color:#3c763d;
+	background: #dff0d8;
+	background-image: linear-gradient(to bottom,#dff0d8 0,#c8e5bc 100%);
+	border-color: #b2dba1;
+	
+	h3
+	{
+		color:@successColor;
+	}
+}
 
-			h3
-			{
-				color:@dangerColor;
-			}
-		}
+.jquery-alert-danger
+{
+	color:#a94442;
+	background: #f2dede;
+	background-image: linear-gradient(to bottom,#f2dede 0,#e7c3c3 100%);
+	border-color:#dca7a7;
+	
 
-		.jquery-alert-info
-		{
-			color:#31708f;
-			background: #d9edf7;
-			background-image: linear-gradient(to bottom,#d9edf7 0,#b9def0 100%);
-			border-color: #9acfea;
-			
-			h3
-			{
-				color:@infoColor;
-			}
-		}
+	h3
+	{
+		color:@dangerColor;
+	}
+}
 
+.jquery-alert-info
+{
+	color:#31708f;
+	background: #d9edf7;
+	background-image: linear-gradient(to bottom,#d9edf7 0,#b9def0 100%);
+	border-color: #9acfea;
+	
+	h3
+	{
+		color:@infoColor;
+	}
 }

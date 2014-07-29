@@ -40,20 +40,25 @@
 		},
 		initHeader: undefined,
 		initmsg: undefined,
+		inline: false, // prepends alert to element rather than into container
 		display: true // if False just returns HTML
 	};
  	
  	function alerts (el, msg, header, options)
 	{
 		this.options = $.extend(true, {}, defaults, options);
+		this.el = el;
 		this.$el = $(el);
 		this.index = this.$el.index();
 		
-
 		// checks if the velocity plugin is enabled
 		this.velocity = (jQuery().velocity) ? true : false;
 
-		if (this.options.display)
+		if (this.options.inline && this.options.display)
+		{
+			return this.buildAlert(el, msg, header);
+		}
+		else if (this.options.display)
 		{
 			var $alert = this.init(msg, header);
 
@@ -153,22 +158,21 @@
 				
 		var h = $alert.outerHeight(); // gets final height for alert
 		
-		$alert.css('opacity', 0)
-			.css('height', 0 + 'px')
+		$alert.css('display', 'none')
+			//.css('height', 0 + 'px')
 			.css('border-radius', o.borderRadius);
 		
 
 		
 		if (this.velocity)
 		{
-			$alert.velocity({ opacity:o.opacity, height:h });
-			//$alert.velocity('slideDown', {});
+			//$alert.velocity({ opacity:o.opacity, height:h });
+			$alert.velocity('slideDown', {});
 
 		}
 		else
 		{
-			$alert.css('opacity', o.opacity)
-				.css('height', '');
+			$alert.fadeIn();
 		}
 		
 		t.setAlertTimeout($alert);
@@ -223,7 +227,7 @@
 		
 		if (vel)
 		{
-			$alert.velocity({ opacity:0 }, {
+			$alert.velocity('slideUp', {
 				duration: duration,
 				complete:function()
 				{
@@ -243,7 +247,7 @@
 	
 	fn.windowOnload = function ()
 	{
-	Warning("test");
+
 	if (GETParam('site-alert') !== undefined && GETParam('site-alert').length > 0 ) Warning(GETParam('site-alert'));
 	if (GETParam('site-info') !== undefined && GETParam('site-info').length > 0 ) Info(GETParam('site-info'));
 	//if (GETParam('site-error') !== undefined && GETParam('site-error').length > 0 ) Danger(GETParam('site-error'));
@@ -257,6 +261,22 @@
 	if (GETParam('success') !== undefined && GETParam('success').length > 0 ) Success(GETParam('success'));
 	return true;
 	}
+	
+	// function to parse HTML markup alerts
+	fn.htmlAlerts = function ()
+	{
+		$('alert').each(function(i, el){
+
+			var options = $(el).data('options');
+
+			if ($(el).data('type').toUpperCase() == 'WARNING') $(el).Warning($(el).data('msg'), $(el).data('header'), options);
+			if ($(el).data('type').toUpperCase() == 'SUCCESS') $(el).Success($(el).data('msg'), $(el).data('header'), options);			
+			if ($(el).data('type').toUpperCase() == 'INFO') $(el).Info($(el).data('msg'), $(el).data('header'), options);			
+			if ($(el).data('type').toUpperCase() == 'DANGER') $(el).Danger($(el).data('msg'), $(el).data('header'), options); // stranger danger
+		});
+
+		return true;
+	};
 
 	// jquery adapter
 	$.fn.alerts = function (msg, header, options)
@@ -275,8 +295,54 @@
 
 	$.fn.Warning = function (msg, header, options)
 	{
-		return $(this).alerts(msg, header, options);
+		var t = this;
+		
+		$alert = $.fn._inline(t, 'warning', msg, header, options);
+		
+		return $alert;
+	};
+
+	$.fn.Success = function (msg, header, options)
+	{
+		var t = this;
+		
+		$alert = $.fn._inline(t, 'success', msg, header, options);
+		
+		return $alert;
+	};
+	
+	$.fn.Info = function (msg, header, options)
+	{
+		var t = this;
+		
+		$alert = $.fn._inline(t, 'info', msg, header, options);
+		
+		return $alert;
+	};
+	
+	$.fn.Danger = function (msg, header, options)
+	{
+		var t = this;
+		
+		$alert = $.fn._inline(t, 'danger', msg, header, options);
+		
+		return $alert;
+	};
+	
+	$.fn._inline = function (el, type, msg, header, options)
+	{
+
+		var inlineDefaultOptions = 
+		{
+			type: type,
+			inline: true
+		};
+		
+		options = $.extend(true, {}, inlineDefaultOptions, options);
+		
+		return new alerts(el, msg, header, options);
 	}
+	
 
 })(jQuery);
 
@@ -315,3 +381,4 @@ Window.prototype.clearAlert = function ($alert)
 }
 
 //jQuery.alerts.windowOnload();
+jQuery.alerts.htmlAlerts();
