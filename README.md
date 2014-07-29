@@ -44,6 +44,7 @@ Extra jQuery functions I use.
 		opacity:0.9,
 		borderRadius:10,
 		clearTimeoutSeconds:3, // 0 for no timeout
+		GET:['site-alert', 'site-warning', 'site-success', 'site-info', 'site-danger', 'site-error', 'warning', 'alert', 'success', 'info', 'danger', 'error'], // GET params that the plugin will look for to try to render
 		animation:
 		{
 			duration:400	

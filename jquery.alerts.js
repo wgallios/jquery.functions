@@ -1,4 +1,12 @@
 
+/**
+
+* Events:
+	alert.before.show // triggered after item is prepended to container and before it renders
+	alert.after.show // triggered after the alert has been show
+	alert.before.hide // triggered before the alert is to be cleared via plugin
+	alert.after.hide // triggered after alert has been cleared 
+*/
 
 ;(function($){
 
@@ -9,6 +17,7 @@
 		opacity:0.9,
 		borderRadius:4,
 		clearTimeoutSeconds:3, // 0 for no timeout
+		GET:['site-alert', 'site-warning', 'site-success', 'site-info', 'site-danger', 'site-error', 'warning', 'alert', 'success', 'info', 'danger', 'error'], // GET params that the plugin will look for to try to render
 		animation:
 		{
 			duration:400	
@@ -154,8 +163,14 @@
 		
 		$alert.append(html);
 		
-		if ($container !== undefined) $container.prepend($alert);
-				
+		if ($container !== undefined)
+		{
+
+			$(t).trigger('alert.before.show', $alert);
+						 		
+			$container.prepend($alert);
+		}
+			
 		var h = $alert.outerHeight(); // gets final height for alert
 		
 		$alert.css('display', 'none')
@@ -167,12 +182,18 @@
 		if (this.velocity)
 		{
 			//$alert.velocity({ opacity:o.opacity, height:h });
-			$alert.velocity('slideDown', {});
+			$alert.velocity('slideDown', { duration: o.animation.duration, complete:function(){
+				
+				$(t).trigger('alert.after.show', $alert);
+				
+			} });
 
 		}
 		else
 		{
-			$alert.fadeIn();
+			$alert.fadeIn(o.animation.duration, function (){
+				$(t).trigger('alert.after.show', $alert);
+			});
 		}
 		
 		t.setAlertTimeout($alert);
@@ -217,6 +238,7 @@
 
 	fn.clearAlert = function ($alert)
 	{
+		var t = this;
 		var duration = this.options.animation.duration;
 		
 		if (duration == undefined) duration = 400;
@@ -227,11 +249,14 @@
 		
 		if (vel)
 		{
+			$(t).trigger('alert.before.hide', $alert);
+			
 			$alert.velocity('slideUp', {
 				duration: duration,
 				complete:function()
 				{
 					$(this).remove();
+					$(t).trigger('alert.after.hide', $alert);
 				}
 			});
 		}
@@ -239,32 +264,38 @@
 		{
 			$alert.fadeOut(duration, function(){
 				$alert.remove();
+				$(t).trigger('alert.after.hide', $alert);
 			})
 		}
 		
 		return true;
 	}
 	
-	fn.windowOnload = function ()
+	fn.urlAlerts = function ()
 	{
-
-	if (GETParam('site-alert') !== undefined && GETParam('site-alert').length > 0 ) Warning(GETParam('site-alert'));
-	if (GETParam('site-info') !== undefined && GETParam('site-info').length > 0 ) Info(GETParam('site-info'));
-	//if (GETParam('site-error') !== undefined && GETParam('site-error').length > 0 ) Danger(GETParam('site-error'));
-	if (GETParam('site-danger') !== undefined && GETParam('site-danger').length > 0 ) Danger(GETParam('site-danger'));
-	if (GETParam('site-success') !== undefined && GETParam('site-success').length > 0 ) Success(GETParam('site-success'));
-	
-	if (GETParam('warning') !== undefined && GETParam('warning').length > 0 ) Warning(GETParam('warning'));
-	if (GETParam('info') !== undefined && GETParam('info').length > 0 ) Info(GETParam('info'));
-	if (GETParam('danger') !== undefined && GETParam('danger').length > 0 ) Danger(GETParam('danger'));
-	if (GETParam('error') !== undefined && GETParam('error').length > 0 ) Danger(GETParam('error'));
-	if (GETParam('success') !== undefined && GETParam('success').length > 0 ) Success(GETParam('success'));
+		this.checkFontAwesome();
+		
+		
+		
+		if (GETParam('site-alert') !== undefined && GETParam('site-alert').length > 0 ) Warning(GETParam('site-alert'));
+		if (GETParam('site-info') !== undefined && GETParam('site-info').length > 0 ) Info(GETParam('site-info'));
+		//if (GETParam('site-error') !== undefined && GETParam('site-error').length > 0 ) Danger(GETParam('site-error'));
+		if (GETParam('site-danger') !== undefined && GETParam('site-danger').length > 0 ) Danger(GETParam('site-danger'));
+		if (GETParam('site-success') !== undefined && GETParam('site-success').length > 0 ) Success(GETParam('site-success'));
+		
+		if (GETParam('warning') !== undefined && GETParam('warning').length > 0 ) Warning(GETParam('warning'));
+		if (GETParam('info') !== undefined && GETParam('info').length > 0 ) Info(GETParam('info'));
+		if (GETParam('danger') !== undefined && GETParam('danger').length > 0 ) Danger(GETParam('danger'));
+		if (GETParam('error') !== undefined && GETParam('error').length > 0 ) Danger(GETParam('error'));
+		if (GETParam('success') !== undefined && GETParam('success').length > 0 ) Success(GETParam('success'));
 	return true;
 	}
 	
 	// function to parse HTML markup alerts
 	fn.htmlAlerts = function ()
 	{
+		this.checkFontAwesome();
+		
 		$('alert').each(function(i, el){
 
 			var options = $(el).data('options');
@@ -297,36 +328,34 @@
 	{
 		var t = this;
 		
-		$alert = $.fn._inline(t, 'warning', msg, header, options);
-		
-		return $alert;
+		return $.fn._inline(this, 'warning', msg, header, options);
 	};
-
+	
+	// Functions to use for just body
+	$.Warning = function (msg, header, options) { return new alerts($('body'), msg, header, options); }
+	$.Success = function (msg, header, options) { return new alerts($('body'), msg, header, $.extend(true, {}, options, { type: 'success' })); }
+	$.Info = function (msg, header, options) { return new alerts($('body'), msg, header, $.extend(true, {}, options, { type: 'info' })); }
+	$.Danger = function (msg, header, options) { return new alerts($('body'), msg, header, $.extend(true, {}, options, { type: 'danger' })); }
+	
 	$.fn.Success = function (msg, header, options)
 	{
 		var t = this;
 		
-		$alert = $.fn._inline(t, 'success', msg, header, options);
-		
-		return $alert;
+		return $.fn._inline(t, 'success', msg, header, options);
 	};
 	
 	$.fn.Info = function (msg, header, options)
 	{
 		var t = this;
 		
-		$alert = $.fn._inline(t, 'info', msg, header, options);
-		
-		return $alert;
+		return $.fn._inline(t, 'info', msg, header, options);
 	};
 	
 	$.fn.Danger = function (msg, header, options)
 	{
 		var t = this;
 		
-		$alert = $.fn._inline(t, 'danger', msg, header, options);
-		
-		return $alert;
+		return $.fn._inline(t, 'danger', msg, header, options);
 	};
 	
 	$.fn._inline = function (el, type, msg, header, options)
@@ -380,5 +409,5 @@ Window.prototype.clearAlert = function ($alert)
 	return jQuery.alerts.clearAlert($alert);
 }
 
-//jQuery.alerts.windowOnload();
+//jQuery.alerts.urlAlerts();
 jQuery.alerts.htmlAlerts();
