@@ -16,7 +16,7 @@
 		type: 'warning', // warning, success, danger, info
 		opacity:0.9,
 		borderRadius:4,
-		clearTimeoutSeconds:3, // 0 for no timeout
+		clearTimeoutSeconds:3, // 0 for no timeout. alias: timeout
 		GET:['site-alert', 'site-warning', 'site-success', 'site-info', 'site-danger', 'site-error', 'warning', 'alert', 'success', 'info', 'danger', 'error'], // GET params that the plugin will look for to try to render
 		animation:
 		{
@@ -59,6 +59,8 @@
 		this.el = el;
 		this.$el = $(el);
 		this.index = this.$el.index();
+		
+		if (options.timeout !== undefined) this.options.clearTimeoutSeconds = options.timeout;
 		
 		// checks if the velocity plugin is enabled
 		this.velocity = (jQuery().velocity) ? true : false;

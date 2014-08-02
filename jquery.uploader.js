@@ -76,6 +76,7 @@ Credits:
 	{
 		debug: false,
 		uploadUrl: '',
+		dataType: 'Intelligent Guess',
 		containerClass: 'uploader-dropzone',
 		btnIcon: 'fa fa-search', // Font awesome icon
 		btnTxt: 'Browse...',
@@ -86,6 +87,7 @@ Credits:
 		showProgress: true,
 		extraParams: {},
 		successFunction: function(d, fd){},
+		errorFunction: function(d, fd){},
 		CSRF:{
 			enabled: false,
 			key: '',
@@ -118,7 +120,7 @@ Credits:
 		var $node = $(this.el);
 		var this_ = this;
 		
-		// remove intial html element
+		// hides intial html element
 		$node.css('display', 'none');
 		
 		$node.change(function (){
@@ -186,6 +188,15 @@ Credits:
 			.bind('dragover', function(e){
 				e.originalEvent.stopPropagation();
 			 	e.originalEvent.preventDefault();
+			})
+			.bind('dragleave', function(e){
+				e.originalEvent.stopPropagation();
+			 	e.originalEvent.preventDefault();
+			 	
+			 	$(this_).trigger('dragleave', e);
+			 	
+			 	$(this).removeClass('dropzone-highlight');	
+				$(this).find('span').text("Click upload, or drop files here.");
 			})
 			.bind('drop', function (e){
 					e.originalEvent.stopPropagation();
@@ -264,13 +275,15 @@ Credits:
 
 		var this_ = this;
 		var sf = this.options.successFunction;
+		var ef = this.options.errorFunction;
+		var dataType = this.options.dataType;
 		
 		$.ajax({
 			url: this.options.uploadUrl,
 			data: fd,
 			processData: false,
 			contentType: false,
-			dataType: 'Intelligent Guess',
+			dataType: this_.options.dataType,
 			type: 'POST',
 		    progress: function(e)
 		    {
@@ -307,11 +320,15 @@ Credits:
 			},
 			success: function(data)
 			{
-			 
+				if (sf !== undefined && typeof sf == 'function') sf(data, fd);
+			},
+			error: function (data)
+			{
+				if (ef !== undefined && typeof ef == 'function') ef(data, fd); 
 			},
 			complete: function(data)
 			{
-				if (sf !== undefined && typeof sf == 'function') sf($.parseJSON(data.responseText), fd); 
+			
 			}
 		});
 	}
@@ -351,7 +368,7 @@ Credits:
 			
 		this.sendFile(fd, pb);
 		
-		this.files.push(files);
+		this.files.push(file);
 
 		return true;
 	}
@@ -419,6 +436,20 @@ Credits:
 		pct.text(percent);
 		
 		$(bar).css('width', percent + '%');
+	}
+	
+	/**
+	* Sets the extra param functions after uploader has been initialized
+	*/
+	fn.setParams = function (params)
+	{
+		if (params == undefined) params = {};
+		
+		if (typeof params !== 'object') return false;
+		
+		this.options.extraParams = params;
+		
+		return true;
 	}
 
 	// jquery adapter

@@ -1329,10 +1329,57 @@ var plugins = {};
 		return buildData;
 	};
 
-	$.fn.ajaxLoader = function ()
+	$.fn.ajaxLoader = function (clearContainer, append)
 	{
+		// loader exists
+		if ($(this).find('.ajax-loader').exists())
+		{
+				return $(this).find('.ajax-loader');
+		}
 		
+		if (clearContainer == undefined) clearContainer = true;
+		if (append == undefined) append = false;
+
+		
+		if (clearContainer) $(this).empty();
+		
+		var t = this;
+		
+		//var w = $(t).outerWidth();
+		//var h = $(t).outerHeight();
+		
+		var duration = 50;
+		
+		
+		var $loader = $('<div>', { class:'ajax-loader', style:'display:none' });
+		
+		//$loader.width(w).height(h);
+		
+		var html = "<span><i class='fa fa-refresh fa-spin'></i> Loading...</span>";
+		
+		
+		
+		$loader.html(html);
+		
+		if (append) $(t).append($loader);
+		else $(t).prepend($loader);
+		
+		$loader.velocity('slideDown', { progress:function(){
+			//$(this).css('dispaly', 'table');
+		}, duration: duration } );
+		
+		return $loader;
 	}
+	
+	$.fn.ajaxLoader.clear = function ()
+	{
+		var loader = $(this).find('.ajax-loader');
+		
+		$(loader).velocity('slideUp', { complete:function(){ $(loader).remove(); }});
+		
+		return true;
+	}
+	
 
 	$.randomString = function (length, chars)
 	{
@@ -1348,6 +1395,38 @@ var plugins = {};
 		
 		return result;
 	}
+	
+	/**
+	* parses HTML and returns object: { head, body }
+	*/
+	$.parseHtml = function (html)
+	{
+		
+		var ph = $.parseHTML(html);
+
+		var obj = { head:null, body:null };
+		
+		var $temp = $("<div>", { id:'tempHtmlFile' });
+		
+		$temp.html(ph);
+		
+		
+		
+		clog($temp.html());
+
+		//var h = $("#tempHtmlFile").append($(html));
+
+//global.log(h.context.childNodes[0].nextSibling.children, true);
+		// clog(h.context.childNodes[0].nextSibling.children[1])
+		
+		//var head = h.context.head;
+		//var body = h.context.body;
+		
+		//obj.body = body;
+		//obj.head = head;
+
+		return obj;	
+	};
 
 	$(window).on('jquery.redirect', function (e, url)
 	{
@@ -1417,7 +1496,9 @@ Window.prototype.isJS = function (src)
 	return jQuery.isJS(src);
 };
 
-
+/**
+* parses input to its proper cast type
+*/
 Window.prototype.parse = function (val)
 {
 	if (val == undefined) return undefined;
@@ -1519,6 +1600,28 @@ Window.prototype.cerror = function (msg, stringify, stackTrace)
 String.prototype.nl2br = function()
 {
     return this.replace(/\n/g, "<br />");
+};
+
+
+
+/**
+* checks if a string is a JSON string or not
+*/
+String.prototype.isJSON = function ()
+{
+	try
+	{
+		var d = jQuery.parseJSON(this);
+
+		if (typeof d == 'object') return true;
+	}
+	catch (e)
+	{
+		// not JSON string
+		return false;
+	}
+	
+	return false;
 }
 
 
