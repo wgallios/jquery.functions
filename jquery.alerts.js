@@ -300,6 +300,8 @@
 		
 		$('alert').each(function(i, el){
 
+			$(el).css('z-index', 1);
+
 			var options = $(el).data('options');
 
 			if ($(el).data('type').toUpperCase() == 'WARNING') $(el).Warning($(el).data('msg'), $(el).data('header'), options);
