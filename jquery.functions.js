@@ -119,6 +119,8 @@ var plugins = {};
 				rcss.push(s);
 			}
 		});
+	
+		return true;
 	}
 
 	// unloads a CSS Script
