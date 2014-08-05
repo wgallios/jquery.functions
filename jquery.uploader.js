@@ -381,9 +381,9 @@ Credits:
 	
 	fn.buildProgressContainer = function ()
 	{
-		if ($('#progress-container').length <= 0)
+		if ($('#uploader-progress-container').length <= 0)
 		{
-			this.pbc = $.parseHTML("<div id='progress-container'></div>");
+			this.pbc = $('<div>', { id:'uploader-progress-container' });
 		
 			$('body').prepend(this.pbc);
 		}
@@ -393,7 +393,7 @@ Credits:
 	
 	fn.createProgressBar = function ()
 	{
-		var $bar = $("<div>", { class:'uploader-progress-container', style:"opacity:0" });
+		var $bar = $("<div>", { class:'uploader-container', style:"opacity:0" });
 			
 		var html = $.parseHTML("<div class='progress-bg'></div>" +
 		"<div class='progress-content'>" +
