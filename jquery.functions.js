@@ -1200,6 +1200,9 @@ var plugins = {};
 	* adds a value to a serialized data string
 	*
 	* @param {String} data - URL
+	* @param key - key to be added
+	* @param val - val to be added
+	* @param update - if key is in data, will update 
 	*
 	*/
 	$.addParam = function (data, key, val, update)
@@ -1602,6 +1605,17 @@ String.prototype.nl2br = function()
     return this.replace(/\n/g, "<br />");
 };
 
+Array.prototype.clean = function ()
+{
+	var temp = [];
+	
+	for (var key in this)
+	{
+		temp[key] = this[key];
+	}
+	
+	return temp;
+}
 
 
 /**
