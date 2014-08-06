@@ -1334,56 +1334,171 @@ var plugins = {};
 		return buildData;
 	};
 
-	$.fn.ajaxLoader = function (clearContainer, append)
+	$.fn.ajaxLoader = function (clearContainer, append, duration)
 	{
+
 		// loader exists
 		if ($(this).find('.ajax-loader').exists())
 		{
-				return $(this).find('.ajax-loader');
+			return $(this).find('.ajax-loader');
 		}
+
+		var t = this;		
 		
 		if (clearContainer == undefined) clearContainer = true;
 		if (append == undefined) append = false;
+		if (duration == undefined) duration = 100;
 
+		var $loader = $._renderAjaxLoader();
 		
-		if (clearContainer) $(this).empty();
+		var $div;
 		
-		var t = this;
-		
-		//var w = $(t).outerWidth();
-		//var h = $(t).outerHeight();
-		
-		var duration = 50;
-		
-		
-		var $loader = $('<div>', { class:'ajax-loader', style:'display:none' });
-		
-		//$loader.width(w).height(h);
-		
-		var html = "<span><i class='fa fa-refresh fa-spin'></i> Loading...</span>";
+		$loader.data('duration', duration);
+		$loader.data('clearContainer', clearContainer);
 		
 		
 		
-		$loader.html(html);
+		if (clearContainer && t.length > 0)
+		{
+
+			$div = $("<div>", { id:'temp-content' });
+			
+			
+			$(t).append($div);
+
+			
+			$(this).children().appendTo($div);
+			
+			//$(this).empty();
+		}
+
+		$(t)._showAjaxLoader($loader, append, duration);
+
+		if ($div !== undefined)
+		{
+
+			$div.velocity('fadeOut', { duration:duration }).velocity('slideUp', {duration:duration });
+		}
 		
-		if (append) $(t).append($loader);
-		else $(t).prepend($loader);
-		
-		$loader.velocity('slideDown', { progress:function(){
-			//$(this).css('dispaly', 'table');
-		}, duration: duration } );
-		
+
 		return $loader;
 	}
 	
-	$.fn.ajaxLoader.clear = function ()
+	// function to remove ajax loader
+	$.fn.ajaxLoader.clear = function (completeFunction)
 	{
-		var loader = $(this).find('.ajax-loader');
 		
-		$(loader).velocity('slideUp', { complete:function(){ $(loader).remove(); }});
+		var t = this;
+		var $loader = $(t).find('.ajax-loader');
+				
+		var duration = $loader.data('duration');
+		var clearContainer = $loader.data('clearContainer');
+		
+		var $div;
+		
+		if (duration == undefined) duration = 50;
+		 
+		 /*
+		if (html !== undefined && html.length > 0)
+		{
+		
+
+
+			
+				$div = $("<div>", { id:'temp-content' });
+				$div.css('display', 'none');
+				
+				$div.html(html);
+				
+				$(t).prepend($div);
+				$divNew.velocity('slideDown');
+
+
+		}
+		*/
+		
+		$loader.velocity('slideUp', {
+			delay:duration,
+			duration: duration,
+			complete:function(){
+				
+			$(this).remove();
+		
+			if (completeFunction !== undefined && typeof completeFunction == 'function') completeFunction();
+			
+		}});	
+	
+		return true;
+	};
+	
+	// creates the actual loader
+	$._renderAjaxLoader = function ()
+	{	
+		var $loader = $('<div>', { class:'ajax-loader' });
+		
+		$loader.css('display', 'none');
+		
+		var html = "<span><i class='fa fa-refresh fa-spin'></i> Loading...</span>";
+		
+		$loader.html(html);
+
+		return $loader;
+	};
+	
+	// shows loader in element
+	$.fn._showAjaxLoader = function ($loader, append, duration)
+	{
+		var t = this;
+				
+		if (append) $(t).append($loader);
+		else $(t).prepend($loader);
+		
+		$loader.velocity('slideDown', {
+			duration: duration
+		});
 		
 		return true;
+		
 	}
+	
+	// removes the loader
+	$.fn._removeAjaxLoader = function ()
+	{
+		$(this)	
+			.velocity('slideUp')
+			.velocity('fadeOut', { complete:function(){ 
+			$(this).remove();
+			
+		}});	
+	
+		return true;
+	};
+	
+	// tracks if an element has had its value changed
+	$.fn.trackChange = function (initChanged)
+	{
+		if (initChanged == undefined) initChanged = false;
+		
+		var $t = $(this);
+		
+		$t.data('changed', initChanged).data('orgValue', $t.val());
+		
+		$t.on('change keyup', function (e){
+			e.stopPropagation();
+			
+			if ($t.val() == $t.data('orgValue'))
+			{
+				$t.data('changed', false);
+			}
+			else
+			{
+				$t.data('changed', true);
+			}
+			return true;
+		});
+		
+		return true;
+	};
 	
 
 	$.randomString = function (length, chars)

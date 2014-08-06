@@ -15,6 +15,7 @@
 		debug: false,
 		type: 'warning', // warning, success, danger, info
 		opacity:0.9,
+		zindex:999,
 		borderRadius:4,
 		clearTimeoutSeconds:3, // 0 for no timeout. alias: timeout
 		GET:['site-alert', 'site-warning', 'site-success', 'site-info', 'site-danger', 'site-error', 'warning', 'alert', 'success', 'info', 'danger', 'error'], // GET params that the plugin will look for to try to render
@@ -176,6 +177,7 @@
 		var h = $alert.outerHeight(); // gets final height for alert
 		
 		$alert.css('display', 'none')
+			.css('z-index', t.options.zindex)
 			//.css('height', 0 + 'px')
 			.css('border-radius', o.borderRadius);
 		
@@ -241,9 +243,10 @@
 	fn.clearAlert = function ($alert)
 	{
 		var t = this;
-		var duration = this.options.animation.duration;
+		var duration;
 		
-		if (duration == undefined) duration = 400;
+		if (this.options == undefined) duration = 400;
+		else duration = this.options.animation.duration;
 		
 		var vel = this.velocity;
 		
@@ -257,7 +260,7 @@
 				duration: duration,
 				complete:function()
 				{
-					$(this).remove();
+					$alert.remove();
 					$(t).trigger('alert.after.hide', $alert);
 				}
 			});
@@ -376,6 +379,12 @@
 		return new alerts(el, msg, header, options);
 	}
 	
+	$.fn.clearAlerts = function ()
+	{
+		$(this).find('.jquery-alert').each(function(i, alert){
+			clearAlert($(alert));
+		})
+	}
 
 })(jQuery);
 
