@@ -1300,8 +1300,6 @@ var plugins = {};
 		{
 			var k;
 			var v;
-			
-			//clog(vars[i]);
 
 	    	// if isset but no val, will return null not undefined
 	    	if (vars[i].indexOf('=') < 0)
@@ -1320,12 +1318,11 @@ var plugins = {};
 
 	    	if (k == key)
 	    	{
-				if (val !== undefined && val.length > 0) buildData += '=' + val;
+				if (val !== undefined && val !== null && val.length > 0) buildData += '=' + val;
 	    	}
 	    	else
 	    	{
-
-		    	if (v !== undefined && v.length > 0) buildData += '=' + v;
+		    	if (v !== undefined && v !== null && v.length > 0) buildData += '=' + v;
 	    	}
 		};	
 	
@@ -1377,7 +1374,14 @@ var plugins = {};
 		if ($div !== undefined)
 		{
 
-			$div.velocity('fadeOut', { duration:duration }).velocity('slideUp', {duration:duration });
+			$div
+				.velocity('fadeOut', { 
+					duration:duration, 
+					complete:function(){
+						$div.remove();
+					}
+				})
+				.velocity('slideUp', {duration:duration });
 		}
 		
 
@@ -1755,6 +1759,13 @@ String.prototype.isJSON = function ()
 	return false;
 }
 
+// Native function to add param to an Object
+/*
+Object.prototype.addParam = function (key, val, update)
+{
+	return jQuery.addParam(this, key, val, update);
+}
+*/
 
 function checkPlugins ()
 {
