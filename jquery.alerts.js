@@ -261,6 +261,7 @@
 				complete:function()
 				{
 					$alert.remove();
+					$(t).removeData();
 					$(t).trigger('alert.after.hide', $alert);
 				}
 			});
@@ -269,6 +270,7 @@
 		{
 			$alert.fadeOut(duration, function(){
 				$alert.remove();
+				$(t).removeData();
 				$(t).trigger('alert.after.hide', $alert);
 			})
 		}

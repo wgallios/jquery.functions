@@ -8,15 +8,16 @@
 	{
 		target: 'body',
 		header: 'Confirm',
-		debug: false,
 		zoom: 90,
 		height:150,
 		width:300,
 		bounce:20,
 		duration:300,
-		backdropOpacity:0.6,
+		ready: function (dialog){},
 		backdrop:
 		{
+			show: true,
+			opacity: 0.6,
 			className: 'modal-backdrop fade in'
 		},
 		closeBtn: true,
@@ -141,7 +142,7 @@
 		//$('html, body').velocity("scroll", 400);
 		//$('body').velocity({ paddingTop:0, paddingLeft:0, paddingRight:0, paddingBottom:0, margin:0 });
 
-		$('#dialog-content-backdrop').velocity({ opacity:t.options.backdropOpacity, height:backDropH + '%'});
+		$('#dialog-content-backdrop').velocity({ opacity:t.options.backdrop.opacity, height:backDropH + '%'});
 		
 		$('body').velocity({
 			scaleX:zoom,
@@ -162,9 +163,14 @@
 	{
 		var t = this;
 		
-		$backdrop = $("<div>", { id:'dialog-content-backdrop', class: this.options.backdrop.className });
+		if (this.options.backdrop.show)
+		{
+			$backdrop = $("<div>", { id:'dialog-content-backdrop', class: this.options.backdrop.className });
+			$container.append($backdrop);
+		}
 		
-		$wrapBack = $("<div>", { id: 'dialog-content-container-backdrop' });
+		
+		//$wrapBack = $("<div>", { id: 'dialog-content-container-backdrop' });
 		
 		$wrap = $("<div>", { id: 'dialog-content-container' });
 		
@@ -193,12 +199,8 @@
 		
 		$dc.append($footer);
 		
-		
 		$wrap.append($dc);
 
-		
-
-		
 		if (t.options.accept.show)
 		{
 			$okBtn = $("<button>", { class: this.options.accept.className, type:'button', html:t.options.accept.text });
@@ -227,7 +229,6 @@
 				e.preventDefault();
 				
 				$denyBtn.disableSpin();
-				//$(this).attr('disabled', 'disabled');
 											
 				$(window).trigger('dialog.cancel');
 			
@@ -245,33 +246,20 @@
 
 		var dcTop = ($(window).height() / 2) - (t.options.height / 2);		
 
-		//var dcLeft = ($(window).width() / 2) - (t.options.width / 2);
 
-		
-		//console.log(dcTop);	
-		
-		//$dc.css('top', dcTop + 'px');
-			//.css('left', dcLeft + 'px')
-			//.css('width', 0)
-			//.css('height', 0);
-		
 		var html = "<span>" + msg + '</span>';
 		
 		$body.html(html);
 		
 		$container.append($wrap);
-		$container.append($backdrop);
 		
-		$dc.velocity({ opacity:1 }, { duration: t.options.duration });
-		
-		/*\
-		$dc.velocity({ width:(t.options.width + bounce), height:(t.options.height + bounce) }, {
-			complete:function ()
-			{
-				$dc.velocity({ width:(t.options.width - bounce), height:(t.options.height - bounce) });
+		$dc.velocity({ opacity:1 }, {
+			duration: t.options.duration,
+			complete: function(){
+				if (t.options.ready !== undefined && typeof t.options.ready == 'function') t.options.ready($dc);
 			}
 		});
-		*/
+		
 		return $dc;
 	}
 	
@@ -285,12 +273,11 @@
 			complete:function()
 			{
 				$('#dialog-content-container').remove();
-				
+				$(t).removeData();
+								
 				$(window).trigger('dialog.destroy');
 			}
 		});
-
-
 
 		$('#dialog-content-backdrop').velocity({ opacity:0 }, {
 			duration: t.options.duration,
@@ -353,10 +340,12 @@ Window.prototype.Dialog = function (msg, options)
 }
 
 
-Window.prototype.Confirm = function (msg, acceptFunction, denyFunction)
+Window.prototype.Confirm = function (msg, acceptFunction, denyFunction, header)
 {
+	if (header == undefined) header = 'Confirm';
+	
 	return jQuery.dialog.constructor(this, msg, { 
-		header: "Cancel",
+		header: header,
 		accept:{
 			close: true,
 			clickFunction: function(e)
